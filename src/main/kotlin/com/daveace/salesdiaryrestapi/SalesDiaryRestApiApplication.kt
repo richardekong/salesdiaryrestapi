@@ -10,3 +10,4 @@ class SalesDiaryRestApiApplication
 fun main(args: Array<String>) {
 	runApplication<SalesDiaryRestApiApplication>(*args)
 }
+
