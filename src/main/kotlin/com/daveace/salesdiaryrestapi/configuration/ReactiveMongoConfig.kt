@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.config
+package com.daveace.salesdiaryrestapi.configuration
 
 import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.reactivestreams.client.MongoClients
