@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.config
+package com.daveace.salesdiaryrestapi.configuration
 
 import com.daveace.salesdiaryrestapi.authentication.SalesDiaryReactiveAuthenticationManager
 import com.daveace.salesdiaryrestapi.authentication.SalesDiarySecurityContextRepository
