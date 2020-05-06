@@ -23,3 +23,5 @@
 hs_err_pid*
 src/main/resources/mailgun.config.properties
 src/main/resources/jwt.properties
+target/classes/jwt.properties
+target/classes/mailgun.config.properties
