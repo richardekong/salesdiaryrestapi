@@ -1,20 +1,23 @@
 package com.daveace.salesdiaryrestapi.authentication
 
 import com.daveace.salesdiaryrestapi.domain.User
-import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
+@PropertySource("classpath:jwt.properties")
 class TokenUtil {
+
+    @Value("\${jwt.secret}")
+    private lateinit var secret:String
 
     companion object {
         const val TOKEN_VALIDITY = 1800000L
-        const val SECRET = "\${jwt.secret}"
     }
 
     fun getEmailFromToken(token: String): String {
@@ -33,7 +36,7 @@ class TokenUtil {
     fun getAllClaimsFromToken(token: String): Claims {
         return Jwts
                 .parser()
-                .setSigningKey(SECRET)
+                .setSigningKey(secret)
                 .parseClaimsJws(token)
                 .body
     }
@@ -44,7 +47,7 @@ class TokenUtil {
                 .setSubject(subject)
                 .setIssuedAt(Date(System.currentTimeMillis()))
                 .setExpiration(Date(System.currentTimeMillis() + validity))
-                .signWith(SignatureAlgorithm.HS256, SECRET)
+                .signWith(SignatureAlgorithm.HS256, secret)
                 .compact()
     }
 
