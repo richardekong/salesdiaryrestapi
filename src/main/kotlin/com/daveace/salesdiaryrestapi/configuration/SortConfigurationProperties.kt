@@ -1,6 +1,6 @@
 package com.daveace.salesdiaryrestapi.configuration
 
-import com.daveace.salesdiaryrestapi.hateoas.sorting.SortOrder
+import com.daveace.salesdiaryrestapi.sort.SortOrder
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
