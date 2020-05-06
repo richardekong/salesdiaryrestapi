@@ -2,7 +2,7 @@ package com.daveace.salesdiaryrestapi.controller
 
 import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.authentication.TokenUtil
-import com.daveace.salesdiaryrestapi.config.SortConfigurationProperties
+import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_LOGIN_USERS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_PASSWORD_RESET_LINK
@@ -15,10 +15,10 @@ import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
 import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
 import com.daveace.salesdiaryrestapi.hateoas.assembler.UserModelAssembler
-import com.daveace.salesdiaryrestapi.hateoas.linking.ReactiveLinkSuport
+import com.daveace.salesdiaryrestapi.hateoas.link.ReactiveLinkSupport
 import com.daveace.salesdiaryrestapi.hateoas.model.TokenModel
 import com.daveace.salesdiaryrestapi.hateoas.model.UserModel
-import com.daveace.salesdiaryrestapi.hateoas.paging.Paginator
+import com.daveace.salesdiaryrestapi.page.Paginator
 import com.daveace.salesdiaryrestapi.service.ReactiveUserService
 import com.daveace.salesdiaryrestapi.service.SalesDiaryPasswordEncoderService
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,7 +36,7 @@ import javax.validation.constraints.Size
 
 @RestController
 @RequestMapping(API)
-class UserController() : ReactiveLinkSuport {
+class UserController() : ReactiveLinkSupport {
 
     private lateinit var userService: ReactiveUserService
     private lateinit var encoderService: SalesDiaryPasswordEncoderService
