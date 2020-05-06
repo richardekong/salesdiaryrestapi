@@ -8,5 +8,5 @@ import org.springframework.stereotype.Service
 class ReactiveCustomerServiceImpl : ReactiveCustomerService {
 
     @Autowired
-    private lateinit var customerRepo:ReactiveCustomerRepository
+    private lateinit var customerRepo: ReactiveCustomerRepository
 }
