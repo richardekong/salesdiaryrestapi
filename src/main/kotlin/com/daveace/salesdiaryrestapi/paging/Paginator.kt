@@ -1,12 +1,12 @@
-package com.daveace.salesdiaryrestapi.hateoas.paging
+package com.daveace.salesdiaryrestapi.paging
 
-import com.daveace.salesdiaryrestapi.config.SortConfigurationProperties
-import com.daveace.salesdiaryrestapi.hateoas.paging.ReactivePageSupport.Companion.FIRST
-import com.daveace.salesdiaryrestapi.hateoas.paging.ReactivePageSupport.Companion.LAST
-import com.daveace.salesdiaryrestapi.hateoas.paging.ReactivePageSupport.Companion.NEXT
-import com.daveace.salesdiaryrestapi.hateoas.paging.ReactivePageSupport.Companion.PREV
-import com.daveace.salesdiaryrestapi.hateoas.paging.ReactivePageSupport.Companion.SELF
-import com.daveace.salesdiaryrestapi.hateoas.sorting.Sort
+import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
+import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.FIRST
+import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.LAST
+import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.NEXT
+import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.PREV
+import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.SELF
+import com.daveace.salesdiaryrestapi.sorting.Sort
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.hateoas.Link
