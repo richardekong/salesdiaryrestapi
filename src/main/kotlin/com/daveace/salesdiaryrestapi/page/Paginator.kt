@@ -1,11 +1,11 @@
-package com.daveace.salesdiaryrestapi.paging
+package com.daveace.salesdiaryrestapi.page
 
 import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
-import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.FIRST
-import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.LAST
-import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.NEXT
-import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.PREV
-import com.daveace.salesdiaryrestapi.paging.ReactivePageSupport.Companion.SELF
+import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.FIRST
+import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.LAST
+import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.NEXT
+import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.PREV
+import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.SELF
 import com.daveace.salesdiaryrestapi.sorting.Sort
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest

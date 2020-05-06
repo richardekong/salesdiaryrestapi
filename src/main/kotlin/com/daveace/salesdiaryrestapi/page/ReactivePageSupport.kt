@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.paging
+package com.daveace.salesdiaryrestapi.page
 
 import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
 import org.springframework.data.domain.PageRequest
