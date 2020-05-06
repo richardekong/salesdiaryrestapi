@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.hateoas.sorting
+package com.daveace.salesdiaryrestapi.sort
 
 enum class SortOrder(val order:String) {
     ASC("asc"),

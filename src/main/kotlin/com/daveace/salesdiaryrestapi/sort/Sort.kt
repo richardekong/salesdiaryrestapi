@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.hateoas.sorting
+package com.daveace.salesdiaryrestapi.sort
 
 import org.springframework.stereotype.Component
 import java.lang.reflect.Field

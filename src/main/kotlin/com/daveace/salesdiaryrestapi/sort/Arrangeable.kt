@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.hateoas.sorting
+package com.daveace.salesdiaryrestapi.sort
 
 interface Arrangeable {
 
