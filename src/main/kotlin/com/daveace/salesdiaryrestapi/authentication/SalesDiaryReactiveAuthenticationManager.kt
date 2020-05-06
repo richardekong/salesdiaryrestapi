@@ -2,18 +2,14 @@ package com.daveace.salesdiaryrestapi.authentication
 
 import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
-import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
 import io.jsonwebtoken.Claims
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.context.SecurityContextImpl
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 
 @Component
 class SalesDiaryReactiveAuthenticationManager : ReactiveAuthenticationManager {
