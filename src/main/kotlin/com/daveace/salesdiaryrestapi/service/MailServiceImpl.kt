@@ -1,7 +1,7 @@
 package com.daveace.salesdiaryrestapi.service
 
 import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
-import com.daveace.salesdiaryrestapi.messaging.Mail
+import com.daveace.salesdiaryrestapi.domain.Mail
 import org.apache.http.HttpHeaders
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

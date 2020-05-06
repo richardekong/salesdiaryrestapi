@@ -6,7 +6,7 @@ import com.daveace.salesdiaryrestapi.domain.Customer
 import com.daveace.salesdiaryrestapi.domain.Trader
 import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
-import com.daveace.salesdiaryrestapi.messaging.Mail
+import com.daveace.salesdiaryrestapi.domain.Mail
 import com.daveace.salesdiaryrestapi.repository.ReactiveCustomerRepository
 import com.daveace.salesdiaryrestapi.repository.ReactiveTraderRepository
 import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
