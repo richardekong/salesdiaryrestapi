@@ -56,12 +56,14 @@ class ReactiveUserServiceImpl : ReactiveUserService {
                 .flatMap {
                     repo.save(user).flatMap {
                         val insertedUser: Mono<User> = saveMoreDetails(it)
-                        val mail = Mail(appEmail, it.email,
-                                "Sale Diary Sign up",
-                                "welcome to Sales Diary Service")
-                        mailService.sendText(mail)
                         insertedUser
                     }
+                }
+                .doOnSuccess {
+                    val mail = Mail(appEmail, it.email,
+                            "Sale Diary Sign up",
+                            "welcome to Sales Diary Service")
+                    mailService.sendText(mail)
                 }
     }
 
