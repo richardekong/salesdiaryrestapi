@@ -19,6 +19,7 @@ import com.daveace.salesdiaryrestapi.hateoas.link.ReactiveLinkSupport
 import com.daveace.salesdiaryrestapi.hateoas.model.TokenModel
 import com.daveace.salesdiaryrestapi.hateoas.model.UserModel
 import com.daveace.salesdiaryrestapi.page.Paginator
+import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
 import com.daveace.salesdiaryrestapi.service.ReactiveUserService
 import com.daveace.salesdiaryrestapi.service.SalesDiaryPasswordEncoderService
 import org.springframework.beans.factory.annotation.Autowired
@@ -108,6 +109,7 @@ class UserController() : ReactiveLinkSupport {
                     tokenUtil.generateToken(it)
                 }
                 .flatMap {
+                    InMemoryTokenStore.storeToken(it)
                     respondWithReactiveLink(
                             TokenModel(it),
                             methodOn(this::class.java)
@@ -196,6 +198,9 @@ class UserController() : ReactiveLinkSupport {
                             methodOn(this.javaClass)
                                     .resetPassword(token, password))
                 }
+                .doOnSuccess {
+                    InMemoryTokenStore.revokeToken(it.email)
+                }
     }
 
 
@@ -203,6 +208,7 @@ class UserController() : ReactiveLinkSupport {
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     fun deleteUser(@PathVariable email: String): Mono<Void> {
         return userService.deleteUserByEmail(email)
+                .doOnSuccess { InMemoryTokenStore.revokeToken(email) }
     }
 
 }
