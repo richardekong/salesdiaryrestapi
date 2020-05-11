@@ -2,6 +2,7 @@ package com.daveace.salesdiaryrestapi.authentication
 
 import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
+import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
 import io.jsonwebtoken.Claims
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.ReactiveAuthenticationManager
@@ -28,8 +29,10 @@ class SalesDiaryReactiveAuthenticationManager : ReactiveAuthenticationManager {
         } catch (e: Exception) {
             throw AuthenticationException("invalid token")
         }
-        if (tokenUtil.isTokenExpired(token))
-            throw AuthenticationException("Token has expired")
+        if (InMemoryTokenStore.isRevoked(token))
+            throw AuthenticationException("Token has been revoked!")
+        else if(tokenUtil.isTokenExpired(token))
+            throw AuthenticationException("Token has expired!")
         val claims: Claims = tokenUtil.getAllClaimsFromToken(token)
         val roles: List<*>? = claims.get(User.ROLE, List::class.java)
         val authorities: List<SimpleGrantedAuthority>? = roles
