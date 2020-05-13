@@ -9,8 +9,6 @@ import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_D
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USER
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USERS
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.APPLICATION_JSON
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.AUTHORIZATION
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.PREFIX
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.populateReactiveRepository
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldDeleteEntity
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntities
@@ -42,6 +40,7 @@ class UserControllerTest {
 
     @MockBean
     private lateinit var usrRepo: ReactiveUserRepository
+    private lateinit var tokenUtil: TokenUtil
     private lateinit var testClient: WebTestClient
     private lateinit var testUser: User
     private lateinit var authorizationToken: String
@@ -63,7 +62,7 @@ class UserControllerTest {
     fun init() {
         testClient = WebTestClient.bindToServer().baseUrl(BASE_URL).build()
         testUser = createTestUser()
-        val tokenUtil = TokenUtil()
+        tokenUtil = TokenUtil()
         authorizationToken = tokenUtil.generateToken(testUser)
         populateReactiveRepository(usrRepo, createTestUsers())
     }
@@ -159,9 +158,9 @@ class UserControllerTest {
     @Test
     @Order(6)
     fun shouldResetUserPassword() {
-        val email: String = testUser.email
+        val token: String = tokenUtil.generateToken(testUser)
         val newPassword = "test2384"
-        val endpoint = "$API$SALES_DIARY_AUTH_RESET_PASSWORD${email}?password=${newPassword}"
+        val endpoint = "$API$SALES_DIARY_AUTH_RESET_PASSWORD${token}?password=${newPassword}"
         testClient.patch().uri(endpoint)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON).exchange()

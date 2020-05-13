@@ -97,16 +97,10 @@ class ReactiveUserServiceImpl : ReactiveUserService {
     }
 
     override fun sendPasswordResetLink(email: String, monoLink: Mono<Link>): Mono<String> {
-        return monoLink
-                .flatMap {
-                    val passwordResetLinkMail = Mail(appEmail, email, "Password Reset Link", it.href)
-                    mailService.sendText(passwordResetLinkMail)
-                    Mono.just("Password reset mail has been sent")
-                }
-                .doOnError {
-                    throw RuntimeException(it.message)
-                }
-
+        return monoLink.flatMap { passwordResetLink ->
+            val passwordResetLinkMail = Mail(appEmail, email, "Password Reset Link", passwordResetLink.href)
+            mailService.sendText(passwordResetLinkMail)
+        }
     }
 
     override fun resetUserPassword(token: String, newPassword: String): Mono<User> {

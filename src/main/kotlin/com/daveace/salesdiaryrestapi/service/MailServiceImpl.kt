@@ -1,12 +1,12 @@
 package com.daveace.salesdiaryrestapi.service
 
-import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
 import com.daveace.salesdiaryrestapi.domain.Mail
 import org.apache.http.HttpHeaders
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriBuilder
+import reactor.core.publisher.Mono
 import java.net.URI
 
 @Service
@@ -58,33 +58,27 @@ class MailServiceImpl : MailService {
         this.mailGunAuthorization = mailGunAuthorization
     }
 
-    override fun sendText(mail: Mail) {
-        send(mail, contentType = TEXT)
+    override fun sendText(mail: Mail): Mono<String> {
+        return send(mail, contentType = TEXT)
     }
 
-    override fun sendHTML(mail: Mail) {
-        send(mail, contentType = HTML)
+    override fun sendHTML(mail: Mail): Mono<String> {
+        return send(mail, contentType = HTML)
     }
 
-    private fun send(mail: Mail, contentType: String) {
-        mailGunWebClient
+    private fun send(mail: Mail, contentType: String): Mono<String> {
+        return mailGunWebClient
                 .post()
                 .uri { buildMailGunQueryParams(it, mail, contentType) }
                 .header(AUTHORIZATION, mailGunAuthorization)
                 .retrieve()
-                .onStatus({
-                    it.is4xxClientError || it.is5xxServerError
-                }, {
-                    throw RestException(it.statusCode().reasonPhrase)
-                })
                 .bodyToMono(String::class.java)
-                .subscribe()
-
+                .onErrorMap { RuntimeException("Failed to Send mail.") }
     }
 
     private fun buildMailGunQueryParams(uriBuilder: UriBuilder, mail: Mail, contentType: String): URI {
         return uriBuilder
-                .path(mailGunDomainName.plus(mailGunMessageUri))
+                .path("$mailGunDomainName$mailGunMessageUri")
                 .queryParam(FROM, mail.from)
                 .queryParam(TO, mail.to)
                 .queryParam(SUBJECT, mail.subject)
