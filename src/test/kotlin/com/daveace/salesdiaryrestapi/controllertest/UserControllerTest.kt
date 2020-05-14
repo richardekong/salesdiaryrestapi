@@ -24,7 +24,6 @@ import org.mockito.Mockito
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -65,7 +64,6 @@ class UserControllerTest {
         testClient = WebTestClient.bindToServer().baseUrl(BASE_URL).build()
         testUser = createTestUser()
         tokenUtil = TokenUtil()
-        //authorizationToken = tokenUtil.generateToken(testUser)
         populateReactiveRepository(usrRepo, createTestUsers())
     }
 
