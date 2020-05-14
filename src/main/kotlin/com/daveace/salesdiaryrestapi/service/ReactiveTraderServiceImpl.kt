@@ -13,20 +13,13 @@ class ReactiveTraderServiceImpl : ReactiveTraderService{
     @Autowired
     private lateinit var traderRepo:ReactiveTraderRepository
 
-    override fun create(trader: Trader): Mono<Trader> {
-        TODO("Not yet implemented")
-    }
-
     override fun findTrader(email: String): Mono<Trader> {
-        TODO("Not yet implemented")
+        return traderRepo.findById(email)
     }
 
     override fun findAllTraders(): Flux<Trader> {
-        TODO("Not yet implemented")
+        return traderRepo.findAll()
     }
 
-    override fun updateTrader(email: String): Mono<Trader> {
-        TODO("Not yet implemented")
-    }
 }
 
