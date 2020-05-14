@@ -15,6 +15,7 @@ import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Compan
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntity
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldPatchEntity
 import com.daveace.salesdiaryrestapi.domain.User
+import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
 import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -23,6 +24,7 @@ import org.mockito.Mockito
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -63,7 +65,7 @@ class UserControllerTest {
         testClient = WebTestClient.bindToServer().baseUrl(BASE_URL).build()
         testUser = createTestUser()
         tokenUtil = TokenUtil()
-        authorizationToken = tokenUtil.generateToken(testUser)
+        //authorizationToken = tokenUtil.generateToken(testUser)
         populateReactiveRepository(usrRepo, createTestUsers())
     }
 
@@ -111,12 +113,17 @@ class UserControllerTest {
                 .jsonPath("$").isMap
                 .jsonPath("$.token").exists()
                 .jsonPath("$.token").isNotEmpty
+                .jsonPath("$.token").value<String> {
+                    authorizationToken = it
+                    InMemoryTokenStore.storeToken(it)
+                }
     }
 
     @Test
     @Order(3)
     fun shouldFindAUser() {
-
+        println("StoredToken:${InMemoryTokenStore.findToken(testUser.email)}")
+        println("Authorization Token:$authorizationToken")
         val email: String = testUser.email
         val endpoint = "$API$SALES_DIARY_USER$email"
         shouldGetEntity(email, testUser, usrRepo, testClient, endpoint, authorizationToken)
@@ -175,6 +182,9 @@ class UserControllerTest {
     @Test
     @Order(7)
     fun shouldDeleteUserAccount() {
+        testUser = createTestUser()
+        shouldSignUpUser()
+        shouldLoginUser()
         val email: String = testUser.email
         val endpoint = "$API$SALES_DIARY_USER$email"
         shouldDeleteEntity(email, testClient, usrRepo, endpoint, authorizationToken)
