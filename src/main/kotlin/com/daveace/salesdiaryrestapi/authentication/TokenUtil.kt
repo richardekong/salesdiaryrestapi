@@ -1,6 +1,7 @@
 package com.daveace.salesdiaryrestapi.authentication
 
 import com.daveace.salesdiaryrestapi.domain.User
+import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -27,7 +28,9 @@ class TokenUtil {
 
     fun generateToken(user: User, validity: Long = TOKEN_VALIDITY): String {
         val claims: MutableMap<String, Any> = mutableMapOf()
-        return doGenerateToken(claims, user.email, validity)
+        val token:String= doGenerateToken(claims, user.email, validity)
+        InMemoryTokenStore.storeToken(user.email, token)
+        return token
     }
 
     fun getAllClaimsFromToken(token: String): Claims {
@@ -53,9 +56,8 @@ class TokenUtil {
         return expiration.before(Date())
     }
 
-    fun validateToken(token: String, usr: User): Boolean {
-        val email: String = getEmailFromToken(token)
-        return email == usr.email && !isTokenExpired(token)
+    fun isTokenRevoked(token: String):Boolean{
+        return InMemoryTokenStore.isRevoked(token)
     }
 
 }

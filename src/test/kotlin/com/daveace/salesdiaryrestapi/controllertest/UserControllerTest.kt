@@ -120,8 +120,6 @@ class UserControllerTest {
     @Test
     @Order(3)
     fun shouldFindAUser() {
-        println("StoredToken:${InMemoryTokenStore.findToken(testUser.email)}")
-        println("Authorization Token:$authorizationToken")
         val email: String = testUser.email
         val endpoint = "$API$SALES_DIARY_USER$email"
         shouldGetEntity(email, testUser, usrRepo, testClient, endpoint, authorizationToken)

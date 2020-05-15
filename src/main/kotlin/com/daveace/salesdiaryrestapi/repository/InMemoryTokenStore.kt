@@ -13,7 +13,11 @@ class InMemoryTokenStore {
             tokenStore.putIfAbsent(email, token)
         }
 
-        fun findToken(email: String): String? {
+        fun storeToken(email:String, token:String){
+            tokenStore.putIfAbsent(email, token)
+        }
+
+        private fun findToken(email: String): String? {
             return tokenStore[email]
         }
 
