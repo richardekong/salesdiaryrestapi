@@ -15,7 +15,7 @@ import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Compan
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntity
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldPatchEntity
 import com.daveace.salesdiaryrestapi.domain.User
-import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
+import com.daveace.salesdiaryrestapi.hateoas.model.UserModel
 import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -51,20 +51,12 @@ class UserControllerTest {
         return User(email, "test007","0780347")
     }
 
-    private fun createTestUsers(): List<User> {
-        return listOf(
-                User("test1@mail.com", "test123", "0947344"),
-                User("test2@mail.com", "test124",  "0837443"),
-                User("test3@mail.com", "test156", "0836453")
-        )
-    }
 
     @BeforeAll
     fun init() {
         testClient = WebTestClient.bindToServer().baseUrl(BASE_URL).build()
         testUser = createTestUser()
         tokenUtil = TokenUtil()
-        populateReactiveRepository(usrRepo, createTestUsers())
     }
 
     @Test
@@ -77,7 +69,7 @@ class UserControllerTest {
                 .uri(endpoint)
                 .contentType(APPLICATION_JSON)
                 .accept(APPLICATION_JSON)
-                .body(userMono, User::class.java)
+                .body(userMono, UserModel::class.java)
                 .exchange()
                 .expectStatus().isCreated
                 .expectBody()

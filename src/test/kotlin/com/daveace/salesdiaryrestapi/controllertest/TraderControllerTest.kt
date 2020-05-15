@@ -87,9 +87,9 @@ class TraderControllerTest {
         shouldGetEntity(testTrader.email, testTrader, traderRepo, testClient, endpoint, authorizationToken)
                 .expectBody()
                 .jsonPath("$").isMap
-                .jsonPath("$..email").isEqualTo(testTrader.email)
-                .jsonPath("$..trader.name").isEqualTo(testTrader.name)
-                .jsonPath("$..address").isEqualTo(testTrader.address)
+                .jsonPath("$.email").isEqualTo(testTrader.email)
+                .jsonPath("$.name").isEqualTo(testTrader.name)
+                .jsonPath("$.address").isEqualTo(testTrader.address)
 
     }
 
