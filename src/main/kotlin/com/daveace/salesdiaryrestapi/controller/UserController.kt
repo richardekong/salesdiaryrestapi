@@ -109,7 +109,6 @@ class UserController() : ReactiveLinkSupport {
                     tokenUtil.generateToken(it)
                 }
                 .flatMap {
-                    InMemoryTokenStore.storeToken(it)
                     respondWithReactiveLink(
                             TokenModel(it),
                             methodOn(this::class.java)
