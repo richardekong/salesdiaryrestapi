@@ -3,25 +3,30 @@ package com.daveace.salesdiaryrestapi.controllertest
 import com.daveace.salesdiaryrestapi.authentication.TokenUtil
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.BASE_URL
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_LOGIN_USERS
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_SIGN_UP_USERS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_TRADER
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_TRADERS
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.populateReactiveRepository
+import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.APPLICATION_JSON
+import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.AUTHORIZATION
+import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.PREFIX
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntities
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntity
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldPatchEntity
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldPostEntity
 import com.daveace.salesdiaryrestapi.domain.Trader
 import com.daveace.salesdiaryrestapi.domain.User
+import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
 import com.daveace.salesdiaryrestapi.repository.ReactiveTraderRepository
 import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mockito
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
+import reactor.core.publisher.Mono
+import java.util.*
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -32,54 +37,72 @@ class TraderControllerTest {
 
     @MockBean
     private lateinit var traderRepo: ReactiveTraderRepository
-
     @MockBean
-    private lateinit var usrRepo: ReactiveUserRepository
+    private lateinit var usrRepo:ReactiveUserRepository
     private lateinit var testClient: WebTestClient
     private lateinit var tokenUtil: TokenUtil
     private lateinit var testUser: User
     private lateinit var testTrader: Trader
     private lateinit var authorizationToken: String
 
-    private fun createTestTraders(): Array<Trader> = arrayOf(
-            Trader("test1@mail.net", "John", "test address"),
-            Trader("test2@mail.net", "James", "test address"),
-            Trader("test3@mail.net", "Jerry", "test address")
-    )
+    private fun createTestUser():User{
+        val randomEmail:String = UUID
+                .randomUUID().toString()
+                .substring(0, 3).plus("@mail.com")
+        return User(randomEmail, "test123","09034734632")
+    }
 
     private fun createTestTrader(): Trader {
         return Trader("", "Mickey", "test address")
     }
 
+    private fun performSignUpOperation(client:WebTestClient, user:User){
+        val endpoint = "$API$SALES_DIARY_AUTH_SIGN_UP_USERS"
+        client.post().uri(endpoint)
+                .contentType(APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
+                .body(Mono.just(user), user::class.java)
+                .exchange()
+    }
+
+    private fun performLoginOperation(client:WebTestClient, email:String, password:String){
+        val endpoint = "$API$SALES_DIARY_AUTH_LOGIN_USERS"
+        val requestBody = mutableMapOf(
+                "email" to email, "password" to password)
+        client.post().uri(endpoint).contentType(APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
+                .body(Mono.just(requestBody), MutableMap::class.java)
+                .exchange()
+                .expectBody()
+                .jsonPath("$.token").value<String> {
+                    authorizationToken = it
+                    InMemoryTokenStore.storeToken(it)
+                }
+    }
+
     @BeforeAll
     fun init() {
         testClient = WebTestClient.bindToServer().baseUrl(BASE_URL).build()
-        testUser = usrRepo.findAll().blockFirst()!!
+        testUser = createTestUser()
         testTrader = createTestTrader()
         testTrader.email = testUser.email
         testUser.trader = testTrader
-        tokenUtil = TokenUtil()
-        authorizationToken = tokenUtil.generateToken(testUser)
-        populateReactiveRepository(traderRepo, createTestTraders().asList())
+        performSignUpOperation(testClient, testUser)
+    }
+
+    @BeforeEach
+    fun login(){
+        performLoginOperation(testClient, testUser.email, testUser.password)
+    }
+
+    @AfterAll
+    fun clear(){
+        usrRepo.delete(testUser)
+        traderRepo.delete(testTrader)
     }
 
     @Test
     @Order(1)
-    fun shouldSaveATrader() {
-        val endpoint = "$API$SALES_DIARY_TRADERS"
-        shouldPostEntity(testTrader, traderRepo, testClient, endpoint)
-                .expectBody()
-                .jsonPath("$").isNotEmpty.jsonPath("$").isMap
-                .jsonPath("$.email").isEqualTo(testTrader.email)
-                .jsonPath("$.name").isEqualTo(testTrader.name)
-                .jsonPath("$.address").isEqualTo(testTrader.address)
-                .jsonPath("$.location").isNotEmpty
-                .jsonPath("$.location").isEqualTo(testTrader.location)
-
-    }
-
-    @Test
-    @Order(2)
     fun shouldFindAllTrader() {
         val endpoint = "$API$SALES_DIARY_TRADERS"
         shouldGetEntities(traderRepo, testClient, endpoint, authorizationToken)
@@ -94,35 +117,17 @@ class TraderControllerTest {
     }
 
     @Test
-    @Order(3)
+    @Order(2)
     fun shouldFindATrader() {
         val endpoint = "$API$SALES_DIARY_TRADER${testTrader.email}"
         shouldGetEntity(testTrader.email, testTrader, traderRepo, testClient, endpoint, authorizationToken)
-                .expectBody().jsonPath("$").isNotEmpty
+                .expectBody()
                 .jsonPath("$").isMap
                 .jsonPath("$.email").isEqualTo(testTrader.email)
                 .jsonPath("$.name").isEqualTo(testTrader.name)
                 .jsonPath("$.address").isEqualTo(testTrader.address)
-                .jsonPath("$.location").isNotEmpty
                 .jsonPath("$.location").isEqualTo(testTrader.location)
 
-    }
-
-    @Test
-    @Order(4)
-    fun shouldUpdateATrader() {
-        val newTraderRecord = testTrader.copy()
-        newTraderRecord.location = doubleArrayOf(0.83434, 2.0344)
-        newTraderRecord.address = "Tester's address"
-        val endpoint = "$API$SALES_DIARY_TRADERS?email=${testTrader.email}"
-        shouldPatchEntity(testTrader, newTraderRecord, traderRepo, testClient, endpoint, authorizationToken)
-                .expectBody().jsonPath("$").isNotEmpty.jsonPath("$").isMap
-                .jsonPath("$.location").value<DoubleArray> {
-                    assertTrue(!it!!.contentEquals(testTrader.location))
-                }
-                .jsonPath("$.address").value<String> {
-                    assertTrue(it != testTrader.address)
-                }
     }
 
 }
