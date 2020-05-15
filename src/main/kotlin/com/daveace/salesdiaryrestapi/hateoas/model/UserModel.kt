@@ -6,13 +6,21 @@ import org.springframework.hateoas.RepresentationModel
 import org.springframework.hateoas.server.core.Relation
 
 @Relation(value = "user", collectionRelation = "users")
-data class UserModel(@JsonIgnore val user: User) : RepresentationModel<UserModel>() {
-    val email: String = user.email
-    val password: String = user.password
-    val phone: String = user.phone
-    val kind:String = determineKind()
+class UserModel() : RepresentationModel<UserModel>() {
 
-    private fun determineKind():String{
+    lateinit var email: String
+    lateinit var password: String
+    lateinit var phone: String
+    lateinit var kind:String
+
+    constructor(user:User):this(){
+        this.email = user.email
+        this.password = user.password
+        this.phone = user.phone
+        this.kind = determineKind(user)
+    }
+
+    private fun determineKind(user:User):String{
         return when{
             user.customer!= null -> user.customer!!::class.java.simpleName
             user.trader!=null -> user.trader!!::class.java.simpleName

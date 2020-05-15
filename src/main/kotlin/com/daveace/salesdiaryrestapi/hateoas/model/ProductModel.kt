@@ -3,17 +3,27 @@ package com.daveace.salesdiaryrestapi.hateoas.model
 import com.daveace.salesdiaryrestapi.domain.Product
 import org.springframework.hateoas.RepresentationModel
 import org.springframework.hateoas.server.core.Relation
-import java.util.Date
+import java.util.*
 
 @Relation(value="product", collectionRelation="products")
-data class ProductModel(val product: Product) : RepresentationModel<ProductModel>() {
+class ProductModel() : RepresentationModel<ProductModel>() {
 
-    private val id: String = product.id
-    private val traderId: String = product.traderId
-    private val code: String = product.code
-    private val imagePath: String = product.imagePath
-    private val date : Date = product.date
-    private val cost : Double = product.cost
-    private val stock : Double = product.stock
+    lateinit var id: String
+    lateinit var traderId: String
+    lateinit var code: String
+    lateinit var imagePath: String
+    lateinit var date : Date
+    var cost : Double = 0.0
+    var stock : Double = 0.0
+
+    constructor(product:Product):this(){
+        this.id = product.id
+        this.traderId = product.traderId
+        this.code = product.code
+        this.imagePath = product.imagePath
+        this.date = product.date
+        this.cost = product.cost
+        this.stock = product.stock
+    }
 
 }
