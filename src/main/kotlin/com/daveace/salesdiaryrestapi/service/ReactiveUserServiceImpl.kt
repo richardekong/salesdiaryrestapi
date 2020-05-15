@@ -181,7 +181,7 @@ class ReactiveUserServiceImpl : ReactiveUserService {
                         it.name = trader.name
                     if (trader.address.isNotEmpty())
                         it.address = trader.address
-                    if (trader.location.isNotEmpty())
+                    if (trader.location!!.isNotEmpty())
                         it.location = trader.location
                     traderRepo.save(it)
                 }

@@ -10,5 +10,5 @@ data class TraderModel(val trader: Trader) : RepresentationModel<TraderModel>() 
     private val email: String = trader.email
     private val name: String = trader.name
     private val address: String = trader.address
-    private val location:DoubleArray = trader.location
+    private val location:Array<Double>? = trader.location
 }

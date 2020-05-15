@@ -1,8 +1,11 @@
 package com.daveace.salesdiaryrestapi.controllertest
 
+import com.daveace.salesdiaryrestapi.controller.ControllerPath
+import com.daveace.salesdiaryrestapi.domain.User
 import org.mockito.Mockito
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.JsonPathAssertions
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -81,6 +84,28 @@ class ControllerTestFactory {
                     .accept(APPLICATION_JSON)
                     .exchange()
                     .expectStatus().isNoContent
+        }
+
+        fun performSignUpOperation(testClient: WebTestClient, testUser: User){
+            val endpoint = "${ControllerPath.API}${ControllerPath.SALES_DIARY_AUTH_SIGN_UP_USERS}"
+            testClient.post().uri(endpoint)
+                    .contentType(APPLICATION_JSON)
+                    .accept(APPLICATION_JSON)
+                    .body(Mono.just(testUser), testUser::class.java)
+                    .exchange()
+        }
+
+        fun performLoginOperation(testClient: WebTestClient, email:String, password:String): JsonPathAssertions {
+            val endpoint = "${ControllerPath.API}${ControllerPath.SALES_DIARY_AUTH_LOGIN_USERS}"
+            val requestBody: MutableMap<String, String> = mutableMapOf(
+                    "email" to email, "password" to password)
+            return testClient.post().uri(endpoint).contentType(APPLICATION_JSON)
+                    .accept(APPLICATION_JSON)
+                    .body(Mono.just(requestBody), MutableMap::class.java)
+                    .exchange()
+                    .expectBody()
+                    .jsonPath("$.token")
+
         }
 
         fun <E : Any, R : ReactiveMongoRepository<E, String>> populateReactiveRepository(repo: R, data: List<E>) {

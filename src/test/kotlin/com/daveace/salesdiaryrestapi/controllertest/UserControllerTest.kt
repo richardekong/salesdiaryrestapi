@@ -113,7 +113,6 @@ class UserControllerTest {
                 .jsonPath("$.token").isNotEmpty
                 .jsonPath("$.token").value<String> {
                     authorizationToken = it
-                    InMemoryTokenStore.storeToken(it)
                 }
     }
 

@@ -24,13 +24,13 @@ data class Trader(
         }
 
         @field:NotNull
-        var location:DoubleArray = DoubleArray(2)
+        var location:Array<Double>?= emptyArray()
+
         constructor():this(email="")
-        constructor(email:String, name:String, address: String, location:DoubleArray):this(){
+        constructor(email:String, name:String, address: String, location:Array<Double>):this(){
                 this.email = email
                 this.name = name
                 this.address = address
-                this.location[0] = location[0]
-                this.location[1] = location[1]
+                this.location = location
         }
 }
