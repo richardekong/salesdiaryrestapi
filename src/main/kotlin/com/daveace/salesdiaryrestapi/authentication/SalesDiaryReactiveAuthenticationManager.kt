@@ -29,7 +29,7 @@ class SalesDiaryReactiveAuthenticationManager : ReactiveAuthenticationManager {
         } catch (e: Exception) {
             throw AuthenticationException("invalid token")
         }
-        if (InMemoryTokenStore.isRevoked(token))
+        if (tokenUtil.isTokenRevoked(token))
             throw AuthenticationException("Token has been revoked!")
         else if(tokenUtil.isTokenExpired(token))
             throw AuthenticationException("Token has expired!")
