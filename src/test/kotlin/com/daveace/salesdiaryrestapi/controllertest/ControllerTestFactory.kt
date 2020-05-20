@@ -9,6 +9,7 @@ import org.springframework.test.web.reactive.server.JsonPathAssertions
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
 
 class ControllerTestFactory {
 
@@ -47,9 +48,9 @@ class ControllerTestFactory {
         }
 
         fun <E : Any, R : ReactiveMongoRepository<E, String>> shouldGetEntities(
-               repository: R?, testClient: WebTestClient, endpoint: String, token: String
+                repository: R?, testClient: WebTestClient, endpoint: String, token: String
         ): WebTestClient.ResponseSpec {
-            val entityFlux:Flux<E>? = repository?.findAll()
+            val entityFlux: Flux<E>? = repository?.findAll()
             Mockito.`when`(repository?.findAll()).thenReturn(entityFlux)
             return testClient.get()
                     .uri(endpoint)
@@ -63,7 +64,7 @@ class ControllerTestFactory {
                 oldEntity: E, newEntity: E, repository: R, testClient: WebTestClient, endpoint: String, token: String
         ): WebTestClient.ResponseSpec {
 
-            val newEntityMono:Mono<E> = Mono.just(newEntity)
+            val newEntityMono: Mono<E> = Mono.just(newEntity)
             Mockito.`when`(repository.save(newEntity)).thenReturn(newEntityMono)
             assert(oldEntity != newEntity)
             return testClient.patch()
@@ -86,7 +87,14 @@ class ControllerTestFactory {
                     .expectStatus().isNoContent
         }
 
-        fun performSignUpOperation(testClient: WebTestClient, testUser: User){
+        fun setupWebTestClient(): WebTestClient {
+            return WebTestClient
+                    .bindToServer()
+                    .baseUrl(ControllerPath.BASE_URL)
+                    .build()
+        }
+
+        fun performSignUpOperation(testClient: WebTestClient, testUser: User) {
             val endpoint = "${ControllerPath.API}${ControllerPath.SALES_DIARY_AUTH_SIGN_UP_USERS}"
             testClient.post().uri(endpoint)
                     .contentType(APPLICATION_JSON)
@@ -95,7 +103,7 @@ class ControllerTestFactory {
                     .exchange()
         }
 
-        fun performLoginOperation(testClient: WebTestClient, email:String, password:String): JsonPathAssertions {
+        fun performLoginOperation(testClient: WebTestClient, email: String, password: String): JsonPathAssertions {
             val endpoint = "${ControllerPath.API}${ControllerPath.SALES_DIARY_AUTH_LOGIN_USERS}"
             val requestBody: MutableMap<String, String> = mutableMapOf(
                     "email" to email, "password" to password)
@@ -107,6 +115,7 @@ class ControllerTestFactory {
                     .jsonPath("$.token")
 
         }
+
 
         fun <E : Any, R : ReactiveMongoRepository<E, String>> populateReactiveRepository(repo: R, data: List<E>) {
             repo.insert(data)
