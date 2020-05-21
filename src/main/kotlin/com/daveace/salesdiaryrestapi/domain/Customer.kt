@@ -25,23 +25,22 @@ data class Customer(
         var address: String = ""
 ) {
 
-    companion object{
-        val ROLES = arrayOf("USER","CUSTOMER")
+    companion object {
+        val ROLES = arrayOf("USER", "CUSTOMER")
     }
 
     @field:NotNull
-    var location: DoubleArray = DoubleArray(2)
+    var location: MutableList<Double> = mutableListOf()
+    var products:MutableList<Product> = mutableListOf()
 
     constructor() : this(email = "")
-    constructor(
-            email: String, name: String, company: String,
-            address: String, location: DoubleArray
-    ) : this() {
+    constructor(email: String, name: String, company: String,
+                address: String, location: MutableList<Double>) : this() {
+
         this.email = email
         this.name = name
         this.company = company
         this.address = address
-        this.location[0] = location[0]
-        this.location[1] = location[1]
+        this.location = location
     }
 }

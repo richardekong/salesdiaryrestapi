@@ -20,9 +20,7 @@ data class User(
         var phone: String = ""
 ) : UserDetails {
     var trader: Trader? = null
-    var customer: Customer? = null
-    @Transient
-    var kind: String = ""
+
 
     companion object {
         const val ROLE: String = "USER"

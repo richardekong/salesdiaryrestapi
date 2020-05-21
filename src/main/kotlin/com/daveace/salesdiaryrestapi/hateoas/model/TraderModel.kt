@@ -1,7 +1,8 @@
 package com.daveace.salesdiaryrestapi.hateoas.model
 
+import com.daveace.salesdiaryrestapi.domain.Customer
+import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.domain.Trader
-import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.hateoas.RepresentationModel
 import org.springframework.hateoas.server.core.Relation
 
@@ -10,13 +11,19 @@ class TraderModel() : RepresentationModel<TraderModel>() {
 
     lateinit var email: String
     lateinit var name: String
+    lateinit var phone:String
     lateinit var address: String
-    lateinit var location: Array<Double>
+    lateinit var customers:MutableList<Customer>
+    lateinit var products:MutableList<Product>
+    lateinit var location: MutableList<Double>
 
     constructor(trader: Trader) : this() {
         this.email = trader.email
         this.name = trader.name
+        this.phone = trader.phone
         this.address = trader.address
-        this.location = trader.location!!
+        this.customers = trader.customers
+        this.products = trader.products
+        this.location = trader.location
     }
 }

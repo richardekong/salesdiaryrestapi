@@ -88,8 +88,6 @@ class ReactiveUserServiceImpl : ReactiveUserService {
                 .flatMap {
                     if (user.phone.isNotEmpty())
                         it.phone = user.phone
-                    if (user.customer != null)
-                        updateCustomer(user.customer!!)
                     if (user.trader != null)
                         updateTrader(user.trader!!)
                     repo.save(it)
@@ -121,12 +119,7 @@ class ReactiveUserServiceImpl : ReactiveUserService {
                 .flatMap { user ->
                     repo.delete(user)
                             .flatMap {
-                                when {
-                                    user.customer != null ->
-                                        customerRepo.delete(user.customer!!)
-                                    else ->
                                         traderRepo.delete(user.trader!!)
-                                }
                             }
                 }
     }
@@ -134,19 +127,8 @@ class ReactiveUserServiceImpl : ReactiveUserService {
     private fun saveMoreDetails(user: User): Mono<User> {
         return when {
             user.trader != null -> saveTraderFromUser(user)
-            user.customer != null -> saveCustomerFromUser(user)
             else -> Mono.just(user)
         }
-    }
-
-    private fun saveCustomerFromUser(user: User): Mono<User> {
-        val customer: Customer? = user.customer
-        customer!!.email = user.email
-        return customerRepo.save(customer)
-                .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException("Could not save user as customer")
-                })
-                .map { user }
     }
 
     private fun saveTraderFromUser(user: User): Mono<User> {
@@ -157,21 +139,6 @@ class ReactiveUserServiceImpl : ReactiveUserService {
                     throw RestException("Could not save user as trader")
                 })
                 .map { user }
-    }
-
-    private fun updateCustomer(customer: Customer) {
-        customerRepo.findById(customer.email)
-                .subscribe {
-                    if (customer.name.isNotEmpty())
-                        it.name = customer.name
-                    if (customer.address.isNotEmpty())
-                        it.address = customer.address
-                    if (customer.company.isNotEmpty())
-                        it.company = customer.company
-                    if (customer.location.isNotEmpty())
-                        it.location = customer.location
-                    customerRepo.save(it)
-                }
     }
 
     private fun updateTrader(trader: Trader) {

@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull
 data class SalesEvent(
         var traderId: String,
         var productId: String,
+        var customerId:String,
         @field:DecimalMin(value = "0.00")
         val sales: Double,
         @field:DecimalMin(value = "0.00")

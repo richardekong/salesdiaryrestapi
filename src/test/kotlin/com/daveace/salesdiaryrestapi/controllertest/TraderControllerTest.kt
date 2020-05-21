@@ -53,7 +53,7 @@ class TraderControllerTest {
     }
 
     private fun createTestUser(trader: Trader): User {
-        val user = User(trader.email, "test123", "09034734632")
+        val user = User(trader.email, "test123", trader.phone)
         user.trader = trader
         return user
     }
@@ -61,7 +61,7 @@ class TraderControllerTest {
     private fun createTestTrader(): Trader {
         val randomEmail: String = UUID.randomUUID().toString()
                 .substring(0, 3).plus("@mail.com")
-        return Trader(randomEmail, "Mickey", "test address")
+        return Trader(randomEmail, "Mickey", "09034734632","test address")
     }
 
     @Test

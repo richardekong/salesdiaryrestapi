@@ -75,7 +75,6 @@ class UserControllerTest {
                 .expectBody()
                 .jsonPath("$.email").isEqualTo(testUser.email)
                 .jsonPath("$.phone").isEqualTo(testUser.phone)
-                .jsonPath("$.kind").isEqualTo(testUser.kind)
 
     }
 

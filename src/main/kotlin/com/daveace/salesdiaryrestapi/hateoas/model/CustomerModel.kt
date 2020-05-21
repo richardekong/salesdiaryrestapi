@@ -1,6 +1,7 @@
 package com.daveace.salesdiaryrestapi.hateoas.model
 
 import com.daveace.salesdiaryrestapi.domain.Customer
+import com.daveace.salesdiaryrestapi.domain.Product
 import org.springframework.hateoas.RepresentationModel
 import org.springframework.hateoas.server.core.Relation
 
@@ -13,7 +14,8 @@ class CustomerModel() : RepresentationModel<CustomerModel>() {
     lateinit var company: String
     lateinit var signaturePath: String
     lateinit var address: String
-    lateinit var location: DoubleArray
+    lateinit var products:MutableList<Product>
+    lateinit var location:MutableList<Double>
 
     constructor(customer: Customer) : this() {
         this.name = customer.name
@@ -22,6 +24,7 @@ class CustomerModel() : RepresentationModel<CustomerModel>() {
         this.company = customer.company
         this.signaturePath = customer.signaturePath
         this.address = customer.address
+        this.products = customer.products
         this.location = customer.location
     }
 
