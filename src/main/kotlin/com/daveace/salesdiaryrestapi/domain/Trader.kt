@@ -7,10 +7,10 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
-
 @Document
 data class Trader(
         @Id
+        var id: String = "",
         @field:Email(message = EMAIL_VAL_MSG)
         var email: String = "",
         @field:NotNull(message = NAME_VAL_MSG)
@@ -21,8 +21,8 @@ data class Trader(
         var phone: String = "",
         @field:NotNull(message = ADDRESS_VAL_MSG)
         @field:Size(min = MIN_ADDRESS_SIZE)
-        var address: String = ""
-) {
+        var address: String = "") {
+
     companion object {
         val ROLES = arrayOf("USER", "TRADER")
     }
@@ -41,4 +41,6 @@ data class Trader(
         this.address = address
         this.location = location
     }
+
 }
+
