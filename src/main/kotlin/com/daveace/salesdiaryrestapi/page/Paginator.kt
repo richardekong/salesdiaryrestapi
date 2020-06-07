@@ -1,7 +1,6 @@
 package com.daveace.salesdiaryrestapi.page
 
 import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
-import com.daveace.salesdiaryrestapi.hateoas.paging.Presentable
 import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.FIRST
 import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.LAST
 import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.NEXT
