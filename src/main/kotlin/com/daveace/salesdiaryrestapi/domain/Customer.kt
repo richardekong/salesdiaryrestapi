@@ -3,6 +3,8 @@ package com.daveace.salesdiaryrestapi.domain
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.Field
+import reactor.core.publisher.Mono
+import java.util.*
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
@@ -11,6 +13,7 @@ import javax.validation.constraints.Size
 @Document
 data class Customer(
         @Id
+        val id:String = UUID.randomUUID().toString(),
         @field:Email(message = EMAIL_VAL_MSG)
         var email: String = "",
         @field:NotNull(message = NAME_VAL_MSG)
@@ -34,13 +37,15 @@ data class Customer(
     var products:MutableList<Product> = mutableListOf()
 
     constructor() : this(email = "")
-    constructor(email: String, name: String, company: String,
+    constructor(email: String, name: String, traderId: String, company: String,
                 address: String, location: MutableList<Double>) : this() {
 
         this.email = email
         this.name = name
+        this.traderId = traderId
         this.company = company
         this.address = address
         this.location = location
     }
+
 }
