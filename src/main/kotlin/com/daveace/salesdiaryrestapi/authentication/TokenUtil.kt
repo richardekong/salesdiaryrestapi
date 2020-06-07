@@ -18,6 +18,10 @@ class TokenUtil {
         const val SECRET = "\${jwt.secret}"
     }
 
+    fun getIdFromToken(token: String):String{
+        return getAllClaimsFromToken(token)["id"].toString()
+    }
+
     fun getEmailFromToken(token: String): String {
         return getAllClaimsFromToken(token).subject
     }
@@ -28,6 +32,7 @@ class TokenUtil {
 
     fun generateToken(user: User, validity: Long = TOKEN_VALIDITY): String {
         val claims: MutableMap<String, Any> = mutableMapOf()
+        claims["id"] = user.id
         val token:String= doGenerateToken(claims, user.email, validity)
         InMemoryTokenStore.storeToken(user.email, token)
         return token
