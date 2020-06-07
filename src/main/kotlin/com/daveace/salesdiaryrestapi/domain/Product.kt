@@ -16,7 +16,7 @@ data class Product(
         @field:NotBlank(message = PRODUCT_CODE_VAL_MSG)
         var code: String = "",
         var imagePath: String = "",
-        val date: Date = Date) {
+        val date: Date = Date()) {
 
     @field:DecimalMin("0.0")
     var stock: Double = 0.0
