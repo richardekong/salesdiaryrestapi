@@ -31,7 +31,7 @@ class SalesDiaryReactiveAuthenticationManager : ReactiveAuthenticationManager {
         }
         if (tokenUtil.isTokenRevoked(token))
             throw AuthenticationException("Token has been revoked!")
-        else if(tokenUtil.isTokenExpired(token))
+        else if (tokenUtil.isTokenExpired(token))
             throw AuthenticationException("Token has expired!")
         val claims: Claims = tokenUtil.getAllClaimsFromToken(token)
         val roles: List<*>? = claims.get(User.ROLE, List::class.java)
