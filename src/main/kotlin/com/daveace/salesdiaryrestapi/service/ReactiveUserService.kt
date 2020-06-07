@@ -4,7 +4,6 @@ import com.daveace.salesdiaryrestapi.domain.User
 import org.springframework.hateoas.Link
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -14,7 +13,6 @@ interface ReactiveUserService : ReactiveUserDetailsService {
     override fun findByUsername(email: String): Mono<UserDetails>
     fun findUserByEmail(email: String): Mono<User>
     fun findAll(): Flux<User>
-    fun updateUser(email: String, user: User):Mono<User>
     fun sendPasswordResetLink(email: String, monoLink:Mono<Link>):Mono<String>
     fun resetUserPassword(token: String, newPassword:String):Mono<User>
     fun deleteUserByEmail(email:String):Mono<Void>
