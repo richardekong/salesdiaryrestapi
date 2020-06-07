@@ -1,15 +1,17 @@
 package com.daveace.salesdiaryrestapi.controllertest
 
 import com.daveace.salesdiaryrestapi.controller.ControllerPath
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USER
 import com.daveace.salesdiaryrestapi.domain.User
 import org.mockito.Mockito
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
+import org.springframework.hateoas.RepresentationModel
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.JsonPathAssertions
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
 
 class ControllerTestFactory {
 
@@ -19,18 +21,16 @@ class ControllerTestFactory {
         const val AUTHORIZATION = "Authorization"
         const val PREFIX = "Bearer\u0020"
 
-        fun <E : Any, R : ReactiveMongoRepository<E, String>> shouldPostEntity(
-                entity: E, repository: R, testClient: WebTestClient, endpoint: String
-        ): WebTestClient.ResponseSpec {
-            val monoEntity: Mono<E> = Mono.just(entity)
-            Mockito.`when`(repository.insert(entity)).thenReturn(monoEntity)
+        fun <E : Any, M : RepresentationModel<M>> shouldPostEntity(
+                entityModel: M, monoEntity: Mono<E>, testClient: WebTestClient, endpoint: String, authToken: String): WebTestClient.ResponseSpec {
+
             return testClient.post()
                     .uri(endpoint)
+                    .header(AUTHORIZATION, "$PREFIX$authToken")
                     .contentType(APPLICATION_JSON)
                     .accept(APPLICATION_JSON)
-                    .body(monoEntity, entity::class.java)
+                    .body(monoEntity, entityModel::class.java)
                     .exchange()
-                    .expectStatus().isCreated
         }
 
         fun <E : Any, R : ReactiveMongoRepository<E, String>> shouldGetEntity(
@@ -45,6 +45,15 @@ class ControllerTestFactory {
                     .exchange()
                     .expectStatus().isOk
 
+        }
+
+        fun shouldGetResponse(testClient:WebTestClient, endpoint: String, token: String):WebTestClient.ResponseSpec{
+            return testClient
+                    .get()
+                    .uri(endpoint)
+                    .header(AUTHORIZATION, "$PREFIX$token")
+                    .accept(APPLICATION_JSON)
+                    .exchange()
         }
 
         fun <E : Any, R : ReactiveMongoRepository<E, String>> shouldGetEntities(
@@ -87,7 +96,7 @@ class ControllerTestFactory {
                     .expectStatus().isNoContent
         }
 
-        fun setupWebTestClient(): WebTestClient {
+        fun createWebTestClient(): WebTestClient {
             return WebTestClient
                     .bindToServer()
                     .baseUrl(ControllerPath.BASE_URL)
@@ -116,9 +125,15 @@ class ControllerTestFactory {
 
         }
 
-
-        fun <E : Any, R : ReactiveMongoRepository<E, String>> populateReactiveRepository(repo: R, data: List<E>) {
-            repo.insert(data)
+        fun performDeleteOperation(testClient: WebTestClient, email: String, authToken: String) {
+            val endpoint = "$API$SALES_DIARY_USER$email"
+            testClient.delete()
+                    .uri(endpoint)
+                    .header(AUTHORIZATION, "$PREFIX$authToken")
+                    .accept(APPLICATION_JSON)
+                    .exchange()
         }
+
     }
 }
+

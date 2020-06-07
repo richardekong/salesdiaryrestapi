@@ -9,11 +9,9 @@ import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_D
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USER
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USERS
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.APPLICATION_JSON
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.populateReactiveRepository
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldDeleteEntity
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntities
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntity
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldPatchEntity
 import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.hateoas.model.UserModel
 import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
@@ -42,19 +40,21 @@ class UserControllerTest {
     @MockBean
     private lateinit var usrRepo: ReactiveUserRepository
     private lateinit var tokenUtil: TokenUtil
+    private lateinit var encoder: PasswordEncoder
     private lateinit var testClient: WebTestClient
     private lateinit var testUser: User
     private lateinit var authorizationToken: String
 
     private fun createTestUser(): User {
         val email: String = UUID.randomUUID().toString().substring(0, 3).plus("@mail.com")
-        return User(email, "test007","0780347")
+        return User(email, "test007")
     }
 
 
     @BeforeAll
     fun init() {
         testClient = WebTestClient.bindToServer().baseUrl(BASE_URL).build()
+        encoder = BCryptPasswordEncoder()
         testUser = createTestUser()
         tokenUtil = TokenUtil()
     }
@@ -74,7 +74,9 @@ class UserControllerTest {
                 .expectStatus().isCreated
                 .expectBody()
                 .jsonPath("$.email").isEqualTo(testUser.email)
-                .jsonPath("$.phone").isEqualTo(testUser.phone)
+                .jsonPath("$.password").value<String> {
+                    assertTrue(encoder.matches(testUser.password, it))
+                }
 
     }
 
@@ -136,20 +138,6 @@ class UserControllerTest {
 
     @Test
     @Order(5)
-    fun shouldUpdateUserAccount() {
-        val oldUserToUpdate: User = testUser
-        val userToUpdate: User = oldUserToUpdate.copy()
-        val email: String = userToUpdate.email
-        userToUpdate.phone = "102834834"
-        val endpoint = "$API$SALES_DIARY_USER$email"
-        shouldPatchEntity(oldUserToUpdate, userToUpdate, usrRepo, testClient, endpoint, authorizationToken)
-                .expectBody()
-                .jsonPath("$.phone")
-                .isEqualTo(userToUpdate.phone)
-    }
-
-    @Test
-    @Order(6)
     fun shouldResetUserPassword() {
         val token: String = tokenUtil.generateToken(testUser)
         val newPassword = "test2384"
@@ -159,14 +147,13 @@ class UserControllerTest {
                 .contentType(APPLICATION_JSON).exchange()
                 .expectBody()
                 .jsonPath("$.password").value<String> {
-                    val encoder: PasswordEncoder = BCryptPasswordEncoder()
                     assertTrue(encoder.matches(newPassword, it))
                 }
 
     }
 
     @Test
-    @Order(7)
+    @Order(6)
     fun shouldDeleteUserAccount() {
         testUser = createTestUser()
         shouldSignUpUser()
