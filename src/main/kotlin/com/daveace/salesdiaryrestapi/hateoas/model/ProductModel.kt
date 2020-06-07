@@ -10,6 +10,7 @@ class ProductModel() : RepresentationModel<ProductModel>() {
 
     lateinit var id: String
     lateinit var traderId: String
+    lateinit var name:String
     lateinit var code: String
     lateinit var imagePath: String
     lateinit var date : Date
@@ -19,6 +20,7 @@ class ProductModel() : RepresentationModel<ProductModel>() {
     constructor(product:Product):this(){
         this.id = product.id
         this.traderId = product.traderId
+        this.name = product.name
         this.code = product.code
         this.imagePath = product.imagePath
         this.date = product.date
