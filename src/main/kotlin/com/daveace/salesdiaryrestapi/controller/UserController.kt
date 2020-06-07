@@ -50,7 +50,7 @@ class UserController() : ReactiveLinkSupport {
         const val WRONG_CREDENTIAL = "Wrong email or password!"
         const val DEFAULT_SIZE = "1"
         const val DEFAULT_PAGE = "0"
-        const val DEFAULT_SORT_FIELD = "email"
+        const val DEFAULT_SORT_FIELD = "id"
         const val DEFAULT_SORT_ORDER = "asc"
     }
 
@@ -155,19 +155,6 @@ class UserController() : ReactiveLinkSupport {
         )
     }
 
-    @PatchMapping("$SALES_DIARY_USER{email}")
-    fun updateUser(@PathVariable email: String,
-                   @RequestBody user: User): Mono<UserModel> {
-        return userService.updateUser(email, user)
-                .flatMap {
-                    respondWithReactiveLink(
-                            UserModel(it),
-                            methodOn(this::class.java)
-                                    .updateUser(email, it))
-                }
-
-    }
-
     @GetMapping("$SALES_DIARY_AUTH_PASSWORD_RESET_LINK{email}")
     fun requestPasswordResetLink(@PathVariable email: String): Mono<String> {
         return userService.findUserByEmail(email)
@@ -175,7 +162,7 @@ class UserController() : ReactiveLinkSupport {
                     throw RestException("Wrong email address!")
                 })
                 .flatMap {
-                    val token: String = tokenUtil.generateToken(it, validity = 60000L)
+                    val token: String = tokenUtil.generateToken(it, validity = 300000L)
                     val monoLink: Mono<Link> = linkTo(methodOn(
                             this.javaClass).resetPassword(token, ""))
                             .withSelfRel().toMono()
