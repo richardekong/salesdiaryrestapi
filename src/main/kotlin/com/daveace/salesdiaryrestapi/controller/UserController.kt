@@ -162,7 +162,7 @@ class UserController() : ReactiveLinkSupport {
                     throw RestException("Wrong email address!")
                 })
                 .flatMap {
-                    val token: String = tokenUtil.generateToken(it, validity = 300000L)
+                    val token: String = tokenUtil.generateToken(it, validity = 60000L)
                     val monoLink: Mono<Link> = linkTo(methodOn(
                             this.javaClass).resetPassword(token, ""))
                             .withSelfRel().toMono()
