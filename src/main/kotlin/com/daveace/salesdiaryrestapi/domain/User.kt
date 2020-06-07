@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.util.*
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Size
@@ -11,19 +12,22 @@ import javax.validation.constraints.Size
 @Document
 data class User(
         @Id
+        val id:String = UUID.randomUUID().toString(),
         @field:Email(message = EMAIL_VAL_MSG)
-        val email: String = "",
+        var email: String = "",
         @field:Size(min = MIN_PASSWORD_SIZE, message = PASSWORD_SIZE_VAL_MSG)
-        var userPassword: String = "",
-        @field:NotBlank(message = PHONE_VAL_MSG)
-        @field:Size(min = MIN_PHONE_SIZE)
-        var phone: String = ""
+        var userPassword: String = ""
 ) : UserDetails {
     var trader: Trader? = null
 
 
     companion object {
         const val ROLE: String = "USER"
+    }
+
+    constructor(email:String,password:String):this(){
+        this.email = email
+        this.userPassword = password
     }
 
     override fun getAuthorities(): List<GrantedAuthority> = listOf()
