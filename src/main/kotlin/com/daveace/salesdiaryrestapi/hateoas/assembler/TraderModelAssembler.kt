@@ -14,8 +14,8 @@ class TraderModelAssembler : RepresentationModelAssemblerSupport<Trader, TraderM
 
     override fun toModel(trader: Trader): TraderModel {
         return instantiateModel(trader)
-                .add(linkTo(methodOn(UserController::class.java)
-                        .findUserByEmail(trader.email))
+                .add(linkTo(methodOn(TraderController::class.java)
+                        .findTrader(trader.email))
                         .withSelfRel()
                         .toMono().toFuture().join())
     }
