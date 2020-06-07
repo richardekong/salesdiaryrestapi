@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component
 @Component
 @ConfigurationProperties(prefix = "sales-diary.sorting")
 data class SortConfigurationProperties(
-        var by: String = "email",
+        var by: String = "id",
         var dir: String = SortOrder.ASC.order
 )
