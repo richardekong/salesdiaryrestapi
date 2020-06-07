@@ -7,6 +7,7 @@ import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_D
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.APPLICATION_JSON
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.AUTHORIZATION
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.PREFIX
+import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.createWebTestClient
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.performDeleteOperation
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.performLoginOperation
 import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.performSignUpOperation
@@ -18,7 +19,6 @@ import com.daveace.salesdiaryrestapi.domain.Customer
 import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.domain.Trader
 import com.daveace.salesdiaryrestapi.domain.User
-import com.daveace.salesdiaryrestapi.hateoas.link.ReactiveLinkSupport
 import com.daveace.salesdiaryrestapi.hateoas.model.CustomerModel
 import com.daveace.salesdiaryrestapi.hateoas.model.ProductModel
 import com.daveace.salesdiaryrestapi.repository.ReactiveTraderRepository
@@ -50,9 +50,6 @@ class TraderControllerTest {
 
     @MockBean
     private lateinit var traderService: ReactiveTraderServiceImpl
-
-    @MockBean
-    private lateinit var linkSupport: ReactiveLinkSupport
     private lateinit var testClient: WebTestClient
     private lateinit var testUser: User
     private lateinit var testTrader: Trader
@@ -62,8 +59,7 @@ class TraderControllerTest {
 
     @BeforeAll
     fun init() {
-        testClient = WebTestClient.bindToServer()
-                .baseUrl(BASE_URL).build()
+        testClient = createWebTestClient()
         testUser = createTestUser()
         testTrader = createTestTrader(testUser)
         testUser.trader = testTrader

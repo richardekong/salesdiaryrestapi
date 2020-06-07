@@ -21,6 +21,13 @@ class ControllerTestFactory {
         const val AUTHORIZATION = "Authorization"
         const val PREFIX = "Bearer\u0020"
 
+        fun createWebTestClient(): WebTestClient {
+            return WebTestClient
+                    .bindToServer()
+                    .baseUrl(ControllerPath.BASE_URL)
+                    .build()
+        }
+
         fun <E : Any, M : RepresentationModel<M>> shouldPostEntity(
                 entityModel: M, monoEntity: Mono<E>, testClient: WebTestClient, endpoint: String, authToken: String): WebTestClient.ResponseSpec {
 
@@ -94,13 +101,6 @@ class ControllerTestFactory {
                     .accept(APPLICATION_JSON)
                     .exchange()
                     .expectStatus().isNoContent
-        }
-
-        fun createWebTestClient(): WebTestClient {
-            return WebTestClient
-                    .bindToServer()
-                    .baseUrl(ControllerPath.BASE_URL)
-                    .build()
         }
 
         fun performSignUpOperation(testClient: WebTestClient, testUser: User) {
