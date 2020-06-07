@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import java.net.URI
+import java.time.Duration
 
 @Service
 class MailServiceImpl : MailService {
@@ -59,11 +60,11 @@ class MailServiceImpl : MailService {
     }
 
     override fun sendText(mail: Mail): Mono<String> {
-        return send(mail, contentType = TEXT)
+        return send(mail, contentType = TEXT).apply { subscribe() }
     }
 
     override fun sendHTML(mail: Mail): Mono<String> {
-        return send(mail, contentType = HTML)
+        return send(mail, contentType = HTML).apply { subscribe() }
     }
 
     private fun send(mail: Mail, contentType: String): Mono<String> {
@@ -74,6 +75,7 @@ class MailServiceImpl : MailService {
                 .retrieve()
                 .bodyToMono(String::class.java)
                 .onErrorMap { RuntimeException("Failed to Send mail.") }
+
     }
 
     private fun buildMailGunQueryParams(uriBuilder: UriBuilder, mail: Mail, contentType: String): URI {
