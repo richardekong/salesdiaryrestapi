@@ -27,7 +27,6 @@ class SalesMetricsTest {
                         155.00, 3.00, mutableListOf(12.934, 31.034)),
                 SalesEvent("TID002", "CID002", "PID002", 12.0, 100.00,
                         110.00, 6.00, mutableListOf(12.934, 31.034)),
-
                 SalesEvent("TID003", "CID002", "PID003", 6.0, 30.00,
                         45.00, 3.00, mutableListOf(12.934, 31.034))
         )
