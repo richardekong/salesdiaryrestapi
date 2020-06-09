@@ -2,7 +2,7 @@ package com.daveace.salesdiaryrestapi.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 
-data class SalesFigure(@JsonIgnore val events: MutableList<SalesEvent>) {
+data class SalesMetrics(@JsonIgnore val events: MutableList<SalesEvent>) {
 
     val totalCost: Double = getTotalCost(events)
     val totalSales: Double = getTotalSales(events)
@@ -13,16 +13,16 @@ data class SalesFigure(@JsonIgnore val events: MutableList<SalesEvent>) {
     }
 
     private fun getTotalSales(events: MutableList<SalesEvent>): Double {
-        return events.asSequence().sumByDouble { it.quantitySold }
+        return events.asSequence().sumByDouble { it.salesPrice * it.quantitySold}
     }
 
     private fun getProfits(events: MutableList<SalesEvent>): MutableList<Double> {
-        return events.asSequence().map{ getProfit(it) }.toMutableList()
+        return events.asSequence().map { getProfit(it) }.toMutableList()
     }
 
     private fun getTotalProfit(profits: MutableList<Double>): Double {
         return profits.asSequence().sumByDouble { it }
     }
 
-    private fun getProfit(event: SalesEvent) = event.salesPrice - event.costPrice
+    private fun getProfit(event: SalesEvent) = event.quantitySold * (event.salesPrice - event.costPrice)
 }
