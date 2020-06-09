@@ -13,17 +13,32 @@ import javax.validation.constraints.NotNull
 data class SalesEvent(
         @Id
         val id: String = UUID.randomUUID().toString(),
-        var traderId: String,
-        var productId: String,
-        var customerId: String,
+        var traderId: String = "",
+        var productId: String = "",
+        var customerId: String = "",
         @field:DecimalMin(value = "0.00")
-        val quantitySold: Double,
+        var quantitySold: Double = 0.0,
         @field:DecimalMin(value = "0.00")
-        val costPrice: Double,
+        var costPrice: Double = 0.0,
         @field:DecimalMin(value = "0.01")
-        val salesPrice: Double,
+        var salesPrice: Double = 0.0,
         @field:DecimalMin(value = "0.00")
-        val left: Double,
+        var left: Double = 0.0,
         val date: Date = Date(),
         @field:NotNull
-        val location: Point = Point(0.0, 0.0))
+        val location: MutableList<Double> = MutableList(2) { it * 0.0 }) {
+
+    constructor(traderId: String, customerId: String, productId:String, quantitySold: Double, costPrice: Double,
+                salesPrice: Double, left: Double, location: MutableList<Double>) : this() {
+        this.traderId = traderId
+        this.customerId = customerId
+        this.productId = productId
+        this.quantitySold = quantitySold
+        this.costPrice = costPrice
+        this.salesPrice = salesPrice
+        this.left = left
+        this.location[0] = location[0]
+        this.location[1] = location[1]
+    }
+
+}
