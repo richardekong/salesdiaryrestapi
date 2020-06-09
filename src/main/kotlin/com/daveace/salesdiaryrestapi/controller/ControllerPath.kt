@@ -16,6 +16,13 @@ class ControllerPath {
         private const val CUSTOMERS = "/customers"
         private const val PRODUCTS = "/products"
         private const val EVENTS = "/events"
+        private const val DAILY = "/daily"
+        private const val WEEKLY = "/weekly"
+        private const val MONTHLY = "/monthly"
+        private const val QUARTERLY = "/quarterly"
+        private const val SEMESTER ="/semester"
+        private const val YEARLY = "/yearly"
+        private const val METRICS = "/metrics"
         private const val WILDCARD = "/**"
 
         const val SALES_DIARY_AUTH_WILD_CARD = "$SALES_DIARY$AUTH$WILDCARD"
@@ -36,8 +43,20 @@ class ControllerPath {
         const val SALES_DIARY_PRODUCTS = "$SALES_DIARY$PRODUCTS"
         const val SALES_DIARY_PRODUCT = "$SALES_DIARY$PRODUCTS/" // append desired path variable
 
-        const val SALES_DIARY_SALES_EVENTS = "$SALES_DIARY$EVENTS"
         const val SALES_DIARY_SALES_EVENT = "$SALES_DIARY$EVENTS/" //append desired path variable
+        const val SALES_DIARY_SALES_EVENTS = "$SALES_DIARY$EVENTS"
+        const val SALES_DIARY_DAILY_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$DAILY"
+        const val SALES_DIARY_WEEKLY_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$WEEKLY"
+        const val SALES_DIARY_MONTHLY_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$MONTHLY"
+        const val SALES_DIARY_QUARTERLY_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$QUARTERLY"
+        const val SALES_DIARY_SEMESTER_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$SEMESTER"
+        const val SALES_DIARY_YEARLY_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$YEARLY"
+        const val SALES_DIARY_DAILY_SALES_EVENTS_METRICS = "$SALES_DIARY_DAILY_SALES_EVENTS$METRICS"
+        const val SALES_DIARY_WEEKLY_SALES_EVENTS_METRICS = "$SALES_DIARY_WEEKLY_SALES_EVENTS$METRICS"
+        const val SALES_DIARY_MONTHLY_SALES_EVENT_METRICS = "$SALES_DIARY_MONTHLY_SALES_EVENTS$METRICS"
+        const val SALES_DIARY_QUARTERLY_SALES_EVENT_METRICS = "$SALES_DIARY_QUARTERLY_SALES_EVENTS$METRICS"
+        const val SALES_DIARY_SEMESTER_SALES_EVENT_METRICS = "$SALES_DIARY_SEMESTER_SALES_EVENTS$METRICS"
+        const val SALES_DIARY_YEARLY_SALES_EVENT_METRICS = "$SALES_DIARY_YEARLY_SALES_EVENTS$METRICS"
 
     }
 }
