@@ -3,6 +3,8 @@ package com.daveace.salesdiaryrestapi.domain
 import org.springframework.data.annotation.Id
 import org.springframework.data.geo.Point
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.DecimalMin
@@ -24,7 +26,7 @@ data class SalesEvent(
         var salesPrice: Double = 0.0,
         @field:DecimalMin(value = "0.00")
         var left: Double = 0.0,
-        val date: Date = Date(),
+        val date: LocalDate = LocalDate.now(),
         @field:NotNull
         val location: MutableList<Double> = MutableList(2) { it * 0.0 }) {
 
