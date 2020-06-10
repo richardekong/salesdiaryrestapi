@@ -3,7 +3,7 @@ package com.daveace.salesdiaryrestapi.hateoas.model
 import com.daveace.salesdiaryrestapi.domain.Product
 import org.springframework.hateoas.RepresentationModel
 import org.springframework.hateoas.server.core.Relation
-import java.util.*
+import java.time.LocalDate
 
 @Relation(value="product", collectionRelation="products")
 class ProductModel() : RepresentationModel<ProductModel>() {
@@ -13,7 +13,7 @@ class ProductModel() : RepresentationModel<ProductModel>() {
     lateinit var name:String
     lateinit var code: String
     lateinit var imagePath: String
-    lateinit var date : Date
+    lateinit var date : LocalDate
     var cost : Double = 0.0
     var stock : Double = 0.0
 
