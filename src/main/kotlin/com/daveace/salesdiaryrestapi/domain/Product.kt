@@ -2,8 +2,11 @@ package com.daveace.salesdiaryrestapi.domain
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDate
 import java.util.*
-import javax.validation.constraints.*
+import javax.validation.constraints.DecimalMin
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.Size
 
 @Document
 data class Product(
@@ -16,7 +19,7 @@ data class Product(
         @field:NotBlank(message = PRODUCT_CODE_VAL_MSG)
         var code: String = "",
         var imagePath: String = "",
-        val date: Date = Date()) {
+        val date: LocalDate = LocalDate.now()) {
 
     @field:DecimalMin("0.0")
     var stock: Double = 0.0
