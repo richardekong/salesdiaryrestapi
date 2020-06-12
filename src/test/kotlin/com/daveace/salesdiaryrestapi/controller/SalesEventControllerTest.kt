@@ -1,5 +1,6 @@
-package com.daveace.salesdiaryrestapi.controller.test
+package com.daveace.salesdiaryrestapi.controller
 
+import com.daveace.salesdiaryrestapi.BaseTests
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_DAILY_SALES_EVENTS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_DAILY_SALES_EVENTS_METRICS
@@ -24,12 +25,7 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 
-@ExtendWith(SpringExtension::class)
-@ActiveProfiles("test")
-@TestPropertySource(locations = ["classpath:application-test.properties"])
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SalesEventControllerTest {
+class SalesEventControllerTest: BaseTests() {
 
     @MockBean
     private lateinit var eventRepo: ReactiveSalesEventRepository
