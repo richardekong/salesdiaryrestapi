@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.controller.test
+package com.daveace.salesdiaryrestapi.controller
 
 import com.daveace.salesdiaryrestapi.controller.ControllerPath
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
