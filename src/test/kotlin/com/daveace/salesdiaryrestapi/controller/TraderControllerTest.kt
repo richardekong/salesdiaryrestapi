@@ -1,20 +1,21 @@
-package com.daveace.salesdiaryrestapi.controller.test
+package com.daveace.salesdiaryrestapi.controller
 
+import com.daveace.salesdiaryrestapi.BaseTests
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.BASE_URL
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_TRADER
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_TRADERS
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.APPLICATION_JSON
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.AUTHORIZATION
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.PREFIX
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.createWebTestClient
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.performDeleteOperation
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.performLoginOperation
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.performSignUpOperation
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldGetEntities
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldGetEntity
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldGetResponse
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldPostEntity
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.APPLICATION_JSON
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.AUTHORIZATION
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.PREFIX
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.createWebTestClient
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.performDeleteOperation
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.performLoginOperation
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.performSignUpOperation
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldGetEntities
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldGetEntity
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldGetResponse
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldPostEntity
 import com.daveace.salesdiaryrestapi.domain.Customer
 import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.domain.Trader
@@ -24,13 +25,9 @@ import com.daveace.salesdiaryrestapi.hateoas.model.ProductModel
 import com.daveace.salesdiaryrestapi.repository.ReactiveTraderRepository
 import com.daveace.salesdiaryrestapi.service.ReactiveTraderServiceImpl
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.hateoas.Link
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.AssertionErrors.assertTrue
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
@@ -38,12 +35,7 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.util.*
 
-@ExtendWith(SpringExtension::class)
-@ActiveProfiles("test")
-@TestPropertySource(locations = ["classpath:application-test.properties"])
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TraderControllerTest {
+class TraderControllerTest: BaseTests(){
 
     @MockBean
     private lateinit var traderRepo: ReactiveTraderRepository

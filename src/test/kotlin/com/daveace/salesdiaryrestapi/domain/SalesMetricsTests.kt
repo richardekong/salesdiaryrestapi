@@ -1,21 +1,13 @@
-package com.daveace.salesdiaryrestapi.domain.test
+package com.daveace.salesdiaryrestapi.domain
 
 import com.daveace.salesdiaryrestapi.BaseTests
-import com.daveace.salesdiaryrestapi.domain.SalesEvent
-import com.daveace.salesdiaryrestapi.domain.SalesMetrics
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.Test
 import org.springframework.test.util.AssertionErrors.assertTrue
 
-@ExtendWith(SpringExtension::class)
-@ActiveProfiles("test")
-@TestPropertySource(locations = ["classpath:application-test.properties"])
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SalesMetricsTests {
+
+class SalesMetricsTests : BaseTests(){
 
 
     private lateinit var testSalesMetrics: SalesMetrics

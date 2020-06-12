@@ -1,5 +1,6 @@
-package com.daveace.salesdiaryrestapi.controller.test
+package com.daveace.salesdiaryrestapi.controller
 
+import com.daveace.salesdiaryrestapi.BaseTests
 import com.daveace.salesdiaryrestapi.authentication.TokenUtil
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.BASE_URL
@@ -8,34 +9,26 @@ import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_D
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_SIGN_UP_USERS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USER
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USERS
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.APPLICATION_JSON
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldDeleteEntity
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldGetEntities
-import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldGetEntity
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.APPLICATION_JSON
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldDeleteEntity
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldGetEntities
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldGetEntity
 import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.hateoas.model.UserModel
 import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import java.util.*
 
-
-@ExtendWith(SpringExtension::class)
-@ActiveProfiles("test")
-@TestPropertySource(locations = ["classpath:application-test.properties"])
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class UserControllerTest {
+class UserControllerTest: BaseTests() {
 
     @MockBean
     private lateinit var usrRepo: ReactiveUserRepository
