@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.controllertest
+package com.daveace.salesdiaryrestapi.controller.test
 
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_DAILY_SALES_EVENTS

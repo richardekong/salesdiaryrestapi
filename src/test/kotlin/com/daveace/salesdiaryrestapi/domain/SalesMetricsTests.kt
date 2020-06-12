@@ -1,5 +1,6 @@
-package com.daveace.salesdiaryrestapi.domainTest
+package com.daveace.salesdiaryrestapi.domain.test
 
+import com.daveace.salesdiaryrestapi.BaseTests
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
 import com.daveace.salesdiaryrestapi.domain.SalesMetrics
 import org.junit.jupiter.api.*
@@ -14,7 +15,7 @@ import org.springframework.test.util.AssertionErrors.assertTrue
 @TestPropertySource(locations = ["classpath:application-test.properties"])
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SalesMetricsTest {
+class SalesMetricsTests {
 
 
     private lateinit var testSalesMetrics: SalesMetrics

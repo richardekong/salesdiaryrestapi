@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.controllertest
+package com.daveace.salesdiaryrestapi.controller.test
 
 import com.daveace.salesdiaryrestapi.authentication.TokenUtil
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
@@ -8,10 +8,10 @@ import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_D
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_SIGN_UP_USERS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USER
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USERS
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.APPLICATION_JSON
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldDeleteEntity
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntities
-import com.daveace.salesdiaryrestapi.controllertest.ControllerTestFactory.Companion.shouldGetEntity
+import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.APPLICATION_JSON
+import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldDeleteEntity
+import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldGetEntities
+import com.daveace.salesdiaryrestapi.controller.test.ControllerTestFactory.Companion.shouldGetEntity
 import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.hateoas.model.UserModel
 import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
