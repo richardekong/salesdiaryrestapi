@@ -14,13 +14,16 @@ import reactor.core.publisher.Mono
 import java.time.LocalDate
 
 @Service
-class ReactiveSalesEventServiceImpl : ReactiveSalesEventService {
+class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
-    @Autowired
     private lateinit var salesEventRepo: ReactiveSalesEventRepository
+    private lateinit var authenticatedUser: AuthenticatedUser
 
     @Autowired
-    private lateinit var authenticatedUser: AuthenticatedUser
+    constructor(salesEventRepo:ReactiveSalesEventRepository, authenticatedUser: AuthenticatedUser):this(){
+        this.salesEventRepo = salesEventRepo
+        this.authenticatedUser = authenticatedUser
+    }
 
     override fun saveSalesEvent(salesEvent: SalesEvent): Mono<SalesEvent> {
         return authenticatedUser.ownsThisAccountById(salesEvent.traderId)
