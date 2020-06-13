@@ -21,13 +21,13 @@ interface ReactiveSalesEventService {
     fun findSemesterSalesEvents(): Flux<SalesEvent>
     fun findYearlySalesEvents(): Flux<SalesEvent>
     fun findSalesEvents(from: LocalDate, to: LocalDate): Flux<SalesEvent>
-    fun findSalesEventsMetrics(date: LocalDate): Flux<SalesMetrics>
-    fun findDailySalesEventsMetrics(): Flux<SalesMetrics>
-    fun findWeeklySalesEventsMetrics(): Flux<SalesMetrics>
-    fun findMonthlySalesEventsMetrics(): Flux<SalesMetrics>
-    fun findQuarterlySalesEventsMetrics(): Flux<SalesMetrics>
-    fun findSemesterSalesEventsMetrics(): Flux<SalesMetrics>
-    fun findYearlySalesEventsMetrics(): Flux<SalesMetrics>
-    fun findSalesEventsMetrics(from: LocalDate, to: LocalDate): Flux<SalesMetrics>
+    fun findSalesEventsMetrics(date: LocalDate): Mono<SalesMetrics>
+    fun findDailySalesEventsMetrics(): Mono<SalesMetrics>
+    fun findWeeklySalesEventsMetrics(): Mono<SalesMetrics>
+    fun findMonthlySalesEventsMetrics(): Mono<SalesMetrics>
+    fun findQuarterlySalesEventsMetrics(): Mono<SalesMetrics>
+    fun findSemesterSalesEventsMetrics(): Mono<SalesMetrics>
+    fun findYearlySalesEventsMetrics(): Mono<SalesMetrics>
+    fun findSalesEventsMetrics(from: LocalDate, to: LocalDate): Mono<SalesMetrics>
 
 }
