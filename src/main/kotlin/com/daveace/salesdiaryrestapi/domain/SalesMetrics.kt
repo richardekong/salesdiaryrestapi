@@ -10,6 +10,7 @@ data class SalesMetrics(
         var totalProfit: Double = 0.0) {
 
     constructor(events: MutableList<SalesEvent>) : this() {
+        this.events = events
         this.totalCost = getTotalCost(events)
         this.totalSales = getTotalSales(events)
         this.totalProfit = getTotalProfit(getProfits(events))
@@ -17,7 +18,6 @@ data class SalesMetrics(
 
     constructor(category: String, events: MutableList<SalesEvent>):this(events){
         this.category = category
-        this.events = events
     }
 
     private fun getTotalCost(events: MutableList<SalesEvent>): Double {
