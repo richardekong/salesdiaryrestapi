@@ -2,7 +2,7 @@ package com.daveace.salesdiaryrestapi.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 
-data class SalesMetrics(@JsonIgnore val events: MutableList<SalesEvent>) {
+data class SalesMetrics(var category: String = "", @JsonIgnore val events: MutableList<SalesEvent>) {
 
     val totalCost: Double = getTotalCost(events)
     val totalSales: Double = getTotalSales(events)
