@@ -2,18 +2,30 @@ package com.daveace.salesdiaryrestapi.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 
-data class SalesMetrics(var category: String = "", @JsonIgnore val events: MutableList<SalesEvent>) {
+data class SalesMetrics(
+        var category: String = "",
+        @JsonIgnore var events: MutableList<SalesEvent> = mutableListOf(),
+        var totalCost: Double = 0.0,
+        var totalSales: Double = 0.0,
+        var totalProfit: Double = 0.0) {
 
-    val totalCost: Double = getTotalCost(events)
-    val totalSales: Double = getTotalSales(events)
-    val totalProfit: Double = getTotalProfit(getProfits(events))
+    constructor(events: MutableList<SalesEvent>) : this() {
+        this.totalCost = getTotalCost(events)
+        this.totalSales = getTotalSales(events)
+        this.totalProfit = getTotalProfit(getProfits(events))
+    }
+
+    constructor(category: String, events: MutableList<SalesEvent>):this(events){
+        this.category = category
+        this.events = events
+    }
 
     private fun getTotalCost(events: MutableList<SalesEvent>): Double {
         return events.asSequence().sumByDouble { it.costPrice * it.quantitySold }
     }
 
     private fun getTotalSales(events: MutableList<SalesEvent>): Double {
-        return events.asSequence().sumByDouble { it.salesPrice * it.quantitySold}
+        return events.asSequence().sumByDouble { it.salesPrice * it.quantitySold }
     }
 
     private fun getProfits(events: MutableList<SalesEvent>): MutableList<Double> {
