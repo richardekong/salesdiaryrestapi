@@ -5,24 +5,20 @@ import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_DAILY_SALES_EVENTS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_DAILY_SALES_EVENTS_METRICS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_MONTHLY_SALES_EVENTS
-import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_MONTHLY_SALES_EVENT_METRICS
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_MONTHLY_SALES_EVENTS_METRICS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_QUARTERLY_SALES_EVENTS
-import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_QUARTERLY_SALES_EVENT_METRICS
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_QUARTERLY_SALES_EVENTS_METRICS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_SALES_EVENT
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_SALES_EVENTS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_SEMESTER_SALES_EVENTS
-import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_SEMESTER_SALES_EVENT_METRICS
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_SEMESTER_SALES_EVENTS_METRICS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_WEEKLY_SALES_EVENTS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_WEEKLY_SALES_EVENTS_METRICS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_YEARLY_SALES_EVENTS
-import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_YEARLY_SALES_EVENT_METRICS
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_YEARLY_SALES_EVENTS_METRICS
 import com.daveace.salesdiaryrestapi.repository.ReactiveSalesEventRepository
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 
 class SalesEventControllerTest: BaseTests() {
@@ -118,25 +114,25 @@ class SalesEventControllerTest: BaseTests() {
     @Test
     @Order(15)
     fun shouldGetMonthlySalesEventsMetrics(){
-        val endpoint = "$API$SALES_DIARY_MONTHLY_SALES_EVENT_METRICS"
+        val endpoint = "$API$SALES_DIARY_MONTHLY_SALES_EVENTS_METRICS"
     }
 
     @Test
     @Order(16)
     fun shouldGetQuarterlySalesEventsMetrics(){
-        val endpoint = "$API$SALES_DIARY_QUARTERLY_SALES_EVENT_METRICS"
+        val endpoint = "$API$SALES_DIARY_QUARTERLY_SALES_EVENTS_METRICS"
     }
 
     @Test
     @Order(17)
     fun shouldGetSemesterSalesEventsMetrics(){
-        val endpoint = "$API$SALES_DIARY_SEMESTER_SALES_EVENT_METRICS"
+        val endpoint = "$API$SALES_DIARY_SEMESTER_SALES_EVENTS_METRICS"
     }
 
     @Test
     @Order(18)
     fun shouldGetYearlySalesEventsMetrics(){
-        val endpoint = "$API$SALES_DIARY_YEARLY_SALES_EVENT_METRICS"
+        val endpoint = "$API$SALES_DIARY_YEARLY_SALES_EVENTS_METRICS"
     }
 
     @Test
