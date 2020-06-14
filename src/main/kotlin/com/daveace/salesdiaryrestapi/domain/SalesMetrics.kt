@@ -9,6 +9,15 @@ data class SalesMetrics(
         var totalSales: Double = 0.0,
         var totalProfit: Double = 0.0) {
 
+    enum class Category(val category: String) {
+        PERIODIC("Periodic"),
+        DAILY("Daily"), WEEKLY("Weekly"),
+        MONTHLY("Monthly"),
+        QUARTER("Quarter"),
+        SEMESTER("Semester"),
+        YEARLY("Yearly")
+    }
+
     constructor(events: MutableList<SalesEvent>) : this() {
         this.events = events
         this.totalCost = getTotalCost(events)
@@ -16,7 +25,7 @@ data class SalesMetrics(
         this.totalProfit = getTotalProfit(getProfits(events))
     }
 
-    constructor(category: String, events: MutableList<SalesEvent>):this(events){
+    constructor(category: String, events: MutableList<SalesEvent>) : this(events) {
         this.category = category
     }
 
