@@ -101,7 +101,7 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
     override fun findSalesEventsMetrics(date: LocalDate): Mono<SalesMetrics> {
         return findSalesEvents(date).collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.REGULAR.category, it))
+            Mono.just(SalesMetrics(SalesMetrics.Category.ALL.category, it))
         }
     }
 
@@ -143,7 +143,7 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
     override fun findSalesEventsMetrics(from: LocalDate, to: LocalDate): Mono<SalesMetrics> {
         return findSalesEvents(from, to).collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.PERIODIC.category, it))
+            Mono.just(SalesMetrics(SalesMetrics.Category.ADHOC.category, it))
         }
     }
 
