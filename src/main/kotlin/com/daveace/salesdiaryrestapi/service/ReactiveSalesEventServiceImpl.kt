@@ -20,7 +20,7 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     private lateinit var authenticatedUser: AuthenticatedUser
 
     @Autowired
-    constructor(salesEventRepo:ReactiveSalesEventRepository, authenticatedUser: AuthenticatedUser):this(){
+    constructor(salesEventRepo: ReactiveSalesEventRepository, authenticatedUser: AuthenticatedUser) : this() {
         this.salesEventRepo = salesEventRepo
         this.authenticatedUser = authenticatedUser
     }
@@ -100,35 +100,51 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     }
 
     override fun findSalesEventsMetrics(date: LocalDate): Mono<SalesMetrics> {
-        return findSalesEvents(date).collectList().flatMap { Mono.just(SalesMetrics(it)) }
+        return findSalesEvents(date).collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.REGULAR.category, it))
+        }
     }
 
     override fun findDailySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findDailySalesEvents().collectList().flatMap { Mono.just(SalesMetrics(it)) }
+        return findDailySalesEvents().collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.DAILY.category, it))
+        }
     }
 
     override fun findWeeklySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findWeeklySalesEvents().collectList().flatMap { Mono.just(SalesMetrics(it)) }
+        return findWeeklySalesEvents().collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.WEEKLY.category, it))
+        }
     }
 
     override fun findMonthlySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findMonthlySalesEvents().collectList().flatMap { Mono.just(SalesMetrics(it)) }
+        return findMonthlySalesEvents().collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.MONTHLY.category, it))
+        }
     }
 
     override fun findQuarterlySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findQuarterlySalesEvents().collectList().flatMap { Mono.just(SalesMetrics(it)) }
+        return findQuarterlySalesEvents().collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.QUARTER.category, it))
+        }
     }
 
     override fun findSemesterSalesEventsMetrics(): Mono<SalesMetrics> {
-        return findSemesterSalesEvents().collectList().flatMap { Mono.just(SalesMetrics(it)) }
+        return findSemesterSalesEvents().collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.SEMESTER.category, it))
+        }
     }
 
     override fun findYearlySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findYearlySalesEvents().collectList().flatMap { Mono.just(SalesMetrics(it)) }
+        return findYearlySalesEvents().collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.YEARLY.category, it))
+        }
     }
 
     override fun findSalesEventsMetrics(from: LocalDate, to: LocalDate): Mono<SalesMetrics> {
-        return findSalesEvents(from, to).collectList().flatMap { Mono.just(SalesMetrics(it)) }
+        return findSalesEvents(from, to).collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.PERIODIC.category, it))
+        }
     }
 
     private fun findAllTradersSalesEvents(): Flux<SalesEvent> {
