@@ -19,6 +19,7 @@ import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_D
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
 import com.daveace.salesdiaryrestapi.hateoas.assembler.SalesEventModelAssembler
 import com.daveace.salesdiaryrestapi.hateoas.model.SalesEventModel
+import com.daveace.salesdiaryrestapi.hateoas.model.SalesMetricsModel
 import com.daveace.salesdiaryrestapi.service.ReactiveSalesEventService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -197,86 +198,61 @@ class SalesEventController : BaseController() {
     }
 
     @GetMapping(SALES_DIARY_DAILY_SALES_EVENTS_METRICS)
-    fun findDailySalesEventsMetrics(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
-    ):Flux<PagedModel<*>>{
-        TODO("Not yet implemented")
+    fun findDailySalesEventsMetrics():Mono<SalesMetricsModel>{
+        return service.findDailySalesEventsMetrics().flatMap {
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findDailySalesEventsMetrics())
+        }
     }
 
     @GetMapping(SALES_DIARY_WEEKLY_SALES_EVENTS_METRICS)
-    fun findWeeklySalesEventsMetrics(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
-    ):Flux<PagedModel<*>>{
-        TODO("Not yet implemented")
+    fun findWeeklySalesEventsMetrics():Mono<SalesMetricsModel>{
+        return service.findWeeklySalesEventsMetrics().flatMap {
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findWeeklySalesEventsMetrics())
+        }
     }
 
     @GetMapping(SALES_DIARY_MONTHLY_SALES_EVENTS_METRICS)
-    fun findMonthlySalesEventsMetrics(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
-    ):Flux<PagedModel<*>>{
-        TODO("Not yet implemented")
+    fun findMonthlySalesEventsMetrics():Mono<SalesMetricsModel>{
+        return service.findMonthlySalesEventsMetrics().flatMap {
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findMonthlySalesEventsMetrics())
+        }
     }
 
     @GetMapping(SALES_DIARY_QUARTERLY_SALES_EVENTS_METRICS)
-    fun findQuarterlySalesEventsMetrics(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
-    ):Flux<PagedModel<*>>{
-        TODO("Not yet Implemented")
+    fun findQuarterlySalesEventsMetrics():Mono<SalesMetricsModel>{
+        return service.findQuarterlySalesEventsMetrics().flatMap {
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findQuarterlySalesEventsMetrics())
+        }
     }
 
     @GetMapping(SALES_DIARY_SEMESTER_SALES_EVENTS_METRICS)
-    fun findSemesterSalesEventsMetrics(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
-    ):Flux<PagedModel<*>>{
-        TODO("Not yet implemented")
+    fun findSemesterSalesEventsMetrics():Mono<SalesMetricsModel>{
+        return service.findSemesterSalesEventsMetrics().flatMap{
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findSemesterSalesEventsMetrics())
+        }
     }
 
     @GetMapping(SALES_DIARY_YEARLY_SALES_EVENTS_METRICS)
-    fun findYearlySalesEventsMetrics(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
-    ):Flux<PagedModel<*>>{
-        TODO("Not yet implemented")
+    fun findYearlySalesEventsMetrics():Mono<SalesMetricsModel>{
+        return service.findYearlySalesEventsMetrics().flatMap{
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findYearlySalesEventsMetrics())
+        }
     }
 
     @GetMapping("$SALES_DIARY_SALES_EVENTS_METRICS/{date}")
-    fun findSalesEventsMetricsByDate(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
-            @PathVariable date:LocalDate
-    ):Flux<PagedModel<*>>{
-        TODO("Not yet implemented")
+    fun findSalesEventsMetricsByDate(@PathVariable date:LocalDate):Mono<SalesMetricsModel>{
+        return service.findSalesEventsMetrics(date).flatMap{
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findSalesEventsMetricsByDate(date))
+        }
     }
 
     @GetMapping("$SALES_DIARY_SALES_EVENTS_METRICS/period")
     fun findSalesEventsMetricsByDateRange(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
             @RequestParam(name = "from") from:LocalDate = LocalDate.now(),
-            @RequestParam(name = "to") to:LocalDate = LocalDate.now()
-    ):Flux<PagedModel<*>>{
-        TODO("Not yet implemented")
+            @RequestParam(name = "to") to:LocalDate = LocalDate.now()):Mono<SalesMetricsModel>{
+        return service.findSalesEventsMetrics(from, to).flatMap{
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findSalesEventsMetricsByDateRange(from, to))
+        }
     }
 }
 
