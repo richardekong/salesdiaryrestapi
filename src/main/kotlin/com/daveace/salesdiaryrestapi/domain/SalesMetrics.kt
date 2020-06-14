@@ -10,6 +10,7 @@ data class SalesMetrics(
         var totalProfit: Double = 0.0) {
 
     enum class Category(val category: String) {
+        REGULAR("Regular"),
         PERIODIC("Periodic"),
         DAILY("Daily"), WEEKLY("Weekly"),
         MONTHLY("Monthly"),
