@@ -29,27 +29,29 @@ class SalesDiarySecurityContextRepository : ServerSecurityContextRepository {
     }
 
     override fun save(p0: ServerWebExchange?, p1: SecurityContext?): Mono<Void> {
-        throw UnsupportedOperationException("Not supported yet.")
+        return Mono.fromRunnable { SecurityContextHolder.setContext(p1) }
     }
 
     override fun load(exchange: ServerWebExchange): Mono<SecurityContext> {
         val request: ServerHttpRequest = exchange.request
         val authHeader: String? = request.headers.getFirst(HttpHeaders.AUTHORIZATION)
         if (authHeader != null && authHeader.startsWith(PREFIX)) {
-            val token = authHeader.substring(PREFIX.length)
-            return createReactiveSecurityContext(token)
+            val token: String = authHeader.substring(PREFIX.length)
+            return createReactiveSecurityContext(token).flatMap {
+                save(exchange, it).apply { subscribe() }
+                Mono.just(it)
+            }
         }
-        return Mono.empty()
-    }
+    return Mono.empty()
+}
 
-    private fun createReactiveSecurityContext(token: String): Mono<SecurityContext> {
-        val authentication: Authentication = UsernamePasswordAuthenticationToken(token, token)
-        return this.authenticationManager.authenticate(authentication).map {
-            val securityContext = SecurityContextImpl(it)
-            SecurityContextHolder.setContext(securityContext)
-            securityContext
-        }
+private fun createReactiveSecurityContext(token: String): Mono<SecurityContext> {
+    val authentication: Authentication = UsernamePasswordAuthenticationToken(token, token)
+    return this.authenticationManager.authenticate(authentication).map {
+        val securityContext = SecurityContextImpl(it)
+        securityContext
     }
+}
 
 }
 
