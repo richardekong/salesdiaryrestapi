@@ -104,7 +104,7 @@ class ControllerTestFactory {
         }
 
         fun performSignUpOperation(testClient: WebTestClient, testUser: User) {
-            val endpoint = "${ControllerPath.API}${ControllerPath.SALES_DIARY_AUTH_SIGN_UP_USERS}"
+            val endpoint = "$API${ControllerPath.SALES_DIARY_AUTH_SIGN_UP_USERS}"
             testClient.post().uri(endpoint)
                     .contentType(APPLICATION_JSON)
                     .accept(APPLICATION_JSON)
@@ -113,7 +113,7 @@ class ControllerTestFactory {
         }
 
         fun performLoginOperation(testClient: WebTestClient, email: String, password: String): JsonPathAssertions {
-            val endpoint = "${ControllerPath.API}${ControllerPath.SALES_DIARY_AUTH_LOGIN_USERS}"
+            val endpoint = "$API${ControllerPath.SALES_DIARY_AUTH_LOGIN_USERS}"
             val requestBody: MutableMap<String, String> = mutableMapOf(
                     "email" to email, "password" to password)
             return testClient.post().uri(endpoint).contentType(APPLICATION_JSON)
