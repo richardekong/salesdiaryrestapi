@@ -33,7 +33,6 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import java.util.*
 
 class TraderControllerTest: BaseTests(){
 
@@ -73,25 +72,6 @@ class TraderControllerTest: BaseTests(){
     @AfterAll
     fun deleteUser() {
         performDeleteOperation(testClient, testUser.email, authorizationToken)
-    }
-
-    private fun createTestUser(): User {
-        val randomEmail: String = UUID.randomUUID().toString().substring(0, 3).plus("@mail.com")
-        return User(randomEmail, "test123")
-    }
-
-    private fun createTestTrader(user: User): Trader {
-        return Trader(user.id, user.email, "Mickey", "09034734632", "test address")
-    }
-
-    private fun createTestProduct(trader: Trader): Product {
-        return Product(trader.id, "Product001", "code0019238", "img/path/product001", 10.00, 100.00)
-    }
-
-    private fun createTestCustomer(trader: Trader): Customer {
-        val email = UUID.randomUUID().toString().substring(0, 3).plus("@mail.com")
-        val location: MutableList<Double> = mutableListOf(12.00, 13.00)
-        return Customer(email, "Customer001", trader.id, "company001", "address001", location)
     }
 
     @Test
