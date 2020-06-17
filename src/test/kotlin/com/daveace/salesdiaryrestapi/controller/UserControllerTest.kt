@@ -3,13 +3,13 @@ package com.daveace.salesdiaryrestapi.controller
 import com.daveace.salesdiaryrestapi.BaseTests
 import com.daveace.salesdiaryrestapi.authentication.TokenUtil
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
-import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.BASE_URL
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_LOGIN_USERS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_RESET_PASSWORD
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_SIGN_UP_USERS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USER
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_USERS
 import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.APPLICATION_JSON
+import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.createWebTestClient
 import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldDeleteEntity
 import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldGetEntities
 import com.daveace.salesdiaryrestapi.controller.ControllerTestFactory.Companion.shouldGetEntity
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -28,25 +29,20 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import java.util.*
 
-class UserControllerTest: BaseTests() {
+
+class UserControllerTest : BaseTests(){
 
     @MockBean
-    private lateinit var usrRepo: ReactiveUserRepository
+    lateinit var usrRepo: ReactiveUserRepository
     private lateinit var tokenUtil: TokenUtil
     private lateinit var encoder: PasswordEncoder
     private lateinit var testClient: WebTestClient
     private lateinit var testUser: User
     private lateinit var authorizationToken: String
 
-    private fun createTestUser(): User {
-        val email: String = UUID.randomUUID().toString().substring(0, 3).plus("@mail.com")
-        return User(email, "test007")
-    }
-
-
     @BeforeAll
     fun init() {
-        testClient = WebTestClient.bindToServer().baseUrl(BASE_URL).build()
+        testClient = createWebTestClient()
         encoder = BCryptPasswordEncoder()
         testUser = createTestUser()
         tokenUtil = TokenUtil()
