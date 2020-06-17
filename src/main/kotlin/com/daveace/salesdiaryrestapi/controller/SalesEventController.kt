@@ -23,6 +23,7 @@ import com.daveace.salesdiaryrestapi.hateoas.model.SalesMetricsModel
 import com.daveace.salesdiaryrestapi.service.ReactiveSalesEventService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
@@ -42,6 +43,7 @@ class SalesEventController : BaseController() {
 
     companion object {
         val TODAY: LocalDate = LocalDate.now()
+        private const val DATE_PATTERN = "yyyyMMdd"
     }
 
     @PostMapping(SALES_DIARY_SALES_EVENTS)
@@ -76,19 +78,19 @@ class SalesEventController : BaseController() {
         }
     }
 
-    @GetMapping("$SALES_DIARY_SALES_EVENTS/{date}")
+    @GetMapping("$SALES_DIARY_SALES_EVENTS/dates")
     fun findAllSalesEventsByDate(
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
             @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
-            @PathVariable date: LocalDate
-    ): Flux<PagedModel<SalesEventModel>> {
+            @RequestParam(name = "date")
+            dateString: String = LocalDate.now().toString()): Flux<PagedModel<SalesEventModel>> {
         return linkTo(methodOn(this::class.java).findAllSalesEventsByDate(
-                size, page, by, dir, date
+                size, page, by, dir, dateString
         )).withSelfRel().toMono().flatMapMany { link ->
             paginator.paginate(SalesEventModelAssembler(),
-                    service.findSalesEvents(date),
+                    service.findSalesEvents(dateString),
                     PageRequest.of(page, size),
                     link, configureSortProperties(by, dir))
         }
@@ -100,9 +102,9 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
             @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
-            @RequestParam(name = "from") from: LocalDate = TODAY,
-            @RequestParam(name = "to") to: LocalDate = TODAY
-    ): Flux<PagedModel<SalesEventModel>> {
+            @RequestParam(name = "from") from: String = TODAY.toString(),
+            @RequestParam(name = "to") to: String = TODAY.toString()): Flux<PagedModel<SalesEventModel>> {
+
         return linkTo(methodOn(this::class.java).findAllSalesEventsByDateRange(size, page, by, dir, from, to))
                 .withSelfRel().toMono().flatMapMany { link ->
                     paginator.paginate(SalesEventModelAssembler(), service.findSalesEvents(from, to),
@@ -198,59 +200,60 @@ class SalesEventController : BaseController() {
     }
 
     @GetMapping(SALES_DIARY_DAILY_SALES_EVENTS_METRICS)
-    fun findDailySalesEventsMetrics():Mono<SalesMetricsModel>{
+    fun findDailySalesEventsMetrics(): Mono<SalesMetricsModel> {
         return service.findDailySalesEventsMetrics().flatMap {
             respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findDailySalesEventsMetrics())
         }
     }
 
     @GetMapping(SALES_DIARY_WEEKLY_SALES_EVENTS_METRICS)
-    fun findWeeklySalesEventsMetrics():Mono<SalesMetricsModel>{
+    fun findWeeklySalesEventsMetrics(): Mono<SalesMetricsModel> {
         return service.findWeeklySalesEventsMetrics().flatMap {
             respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findWeeklySalesEventsMetrics())
         }
     }
 
     @GetMapping(SALES_DIARY_MONTHLY_SALES_EVENTS_METRICS)
-    fun findMonthlySalesEventsMetrics():Mono<SalesMetricsModel>{
+    fun findMonthlySalesEventsMetrics(): Mono<SalesMetricsModel> {
         return service.findMonthlySalesEventsMetrics().flatMap {
             respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findMonthlySalesEventsMetrics())
         }
     }
 
     @GetMapping(SALES_DIARY_QUARTERLY_SALES_EVENTS_METRICS)
-    fun findQuarterlySalesEventsMetrics():Mono<SalesMetricsModel>{
+    fun findQuarterlySalesEventsMetrics(): Mono<SalesMetricsModel> {
         return service.findQuarterlySalesEventsMetrics().flatMap {
             respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findQuarterlySalesEventsMetrics())
         }
     }
 
     @GetMapping(SALES_DIARY_SEMESTER_SALES_EVENTS_METRICS)
-    fun findSemesterSalesEventsMetrics():Mono<SalesMetricsModel>{
-        return service.findSemesterSalesEventsMetrics().flatMap{
+    fun findSemesterSalesEventsMetrics(): Mono<SalesMetricsModel> {
+        return service.findSemesterSalesEventsMetrics().flatMap {
             respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findSemesterSalesEventsMetrics())
         }
     }
 
     @GetMapping(SALES_DIARY_YEARLY_SALES_EVENTS_METRICS)
-    fun findYearlySalesEventsMetrics():Mono<SalesMetricsModel>{
-        return service.findYearlySalesEventsMetrics().flatMap{
+    fun findYearlySalesEventsMetrics(): Mono<SalesMetricsModel> {
+        return service.findYearlySalesEventsMetrics().flatMap {
             respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findYearlySalesEventsMetrics())
         }
     }
 
-    @GetMapping("$SALES_DIARY_SALES_EVENTS_METRICS/{date}")
-    fun findSalesEventsMetricsByDate(@PathVariable date:LocalDate):Mono<SalesMetricsModel>{
-        return service.findSalesEventsMetrics(date).flatMap{
-            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findSalesEventsMetricsByDate(date))
+    @GetMapping("$SALES_DIARY_SALES_EVENTS_METRICS/{dateString}")
+    fun findSalesEventsMetricsByDate(@PathVariable dateString: String): Mono<SalesMetricsModel> {
+        return service.findSalesEventsMetrics(dateString).flatMap {
+            respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findSalesEventsMetricsByDate(dateString))
         }
     }
 
     @GetMapping("$SALES_DIARY_SALES_EVENTS_METRICS/period")
     fun findSalesEventsMetricsByDateRange(
-            @RequestParam(name = "from") from:LocalDate = LocalDate.now(),
-            @RequestParam(name = "to") to:LocalDate = LocalDate.now()):Mono<SalesMetricsModel>{
-        return service.findSalesEventsMetrics(from, to).flatMap{
+            @RequestParam(name = "from") from: String = TODAY.toString(),
+            @RequestParam(name = "to") to: String = TODAY.toString()): Mono<SalesMetricsModel> {
+
+        return service.findSalesEventsMetrics(from, to).flatMap {
             respondWithReactiveLink(SalesMetricsModel(it), methodOn(this::class.java).findSalesEventsMetricsByDateRange(from, to))
         }
     }
