@@ -81,7 +81,7 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     @Test
     @Order(4)
     fun shouldFindSalesEventsByDate() {
-        val today: LocalDate = LocalDate.now()
+        val today: String = LocalDate.now().toString()
         val salesEventFlux: Flux<SalesEvent> = Flux.just(testSalesEvent)
         Mockito.`when`(testEventService.findSalesEvents(today)).thenReturn(salesEventFlux)
         StepVerifier.create(testEventService.findSalesEvents(today))
@@ -159,7 +159,7 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     @Test
     @Order(11)
     fun shouldFindSalesEventsMetrics() {
-        val today: LocalDate = LocalDate.now()
+        val today: String = LocalDate.now().toString()
         val salesEventMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val salesEventMetricsMono: Mono<SalesMetrics> = Mono.just(salesEventMetrics)
         Mockito.`when`(testEventService.findSalesEventsMetrics(today)).thenReturn(salesEventMetricsMono)
@@ -246,8 +246,8 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     @Order(18)
     fun shouldFindSalesEventsMetricsByDateRange() {
 
-        val from: LocalDate = LocalDate.now().minusDays(Random.nextLong(1, 10))
-        val to: LocalDate = LocalDate.now()
+        val from: String = LocalDate.now().minusDays(Random.nextLong(1, 10)).toString()
+        val to: String = LocalDate.now().toString()
         val salesMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val salesMetricsMono: Mono<SalesMetrics> = Mono.just(salesMetrics)
         Mockito.`when`(testEventService.findSalesEventsMetrics(from, to)).thenReturn(salesMetricsMono)
@@ -261,8 +261,8 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     @Order(19)
     fun shouldFindSalesEventByDateRange() {
 
-        val from:LocalDate = LocalDate.now().minusDays(Random.nextLong(1, 10))
-        val to:LocalDate = LocalDate.now()
+        val from:String = LocalDate.now().minusDays(Random.nextLong(1, 10)).toString()
+        val to:String = LocalDate.now().toString()
         val salesEventFlux:Flux<SalesEvent> = Flux.just(testSalesEvent)
         Mockito.`when`(testEventService.findSalesEvents(from, to)).thenReturn(salesEventFlux)
         StepVerifier.create(testEventService.findSalesEvents(from, to))
