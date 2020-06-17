@@ -13,6 +13,7 @@ class SalesEventModel() : RepresentationModel<SalesEventModel>() {
 
     lateinit var id: String
     lateinit var traderId: String
+    lateinit var customerId:String
     lateinit var productId: String
     var salesPrice: Double = 0.0
     var quantitySold: Double = 0.0
@@ -24,6 +25,7 @@ class SalesEventModel() : RepresentationModel<SalesEventModel>() {
     constructor(event: SalesEvent) : this() {
         this.id = event.id
         this.traderId = event.traderId
+        this.customerId = event.customerId
         this.productId = event.productId
         this.costPrice = event.costPrice
         this.salesPrice = event.salesPrice
