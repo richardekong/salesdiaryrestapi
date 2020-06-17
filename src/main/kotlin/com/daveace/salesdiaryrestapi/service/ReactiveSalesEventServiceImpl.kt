@@ -12,12 +12,17 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Service
 class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
     private lateinit var salesEventRepo: ReactiveSalesEventRepository
     private lateinit var authenticatedUser: AuthenticatedUser
+
+    companion object {
+        private const val DATE_PATTERN = "yyyy-MM-dd"
+    }
 
     @Autowired
     constructor(salesEventRepo: ReactiveSalesEventRepository, authenticatedUser: AuthenticatedUser) : this() {
@@ -31,9 +36,10 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     }
 
     override fun findSalesEvent(id: String): Mono<SalesEvent> {
-        return authenticatedUser.ownsThisAccountById(id)
-                .flatMap {
+        return authenticatedUser.getCurrentUser()
+                .flatMap {currentUser ->
                     salesEventRepo.findById(id)
+                            .filter { currentUser.id == it.traderId }
                             .switchIfEmpty(throwAuthenticationException())
                 }
     }
@@ -42,7 +48,8 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
         return findAllTradersSalesEvents()
     }
 
-    override fun findSalesEvents(date: LocalDate): Flux<SalesEvent> {
+    override fun findSalesEvents(dateString: String): Flux<SalesEvent> {
+        val date : LocalDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
         return authenticatedUser.getCurrentUser()
                 .flatMapMany { currentUser ->
                     salesEventRepo.findSalesEventsByDate(date)
@@ -95,13 +102,15 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
         }.switchIfEmpty(throwRestException())
     }
 
-    override fun findSalesEvents(from: LocalDate, to: LocalDate): Flux<SalesEvent> {
-        return findAllTradersSalesEvents().filter { dateIsBetween(from, it.date, to) }
+    override fun findSalesEvents(from: String, to: String): Flux<SalesEvent> {
+        val start:LocalDate = LocalDate.parse(from, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        val end:LocalDate = LocalDate.parse(to, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        return findAllTradersSalesEvents().filter { dateIsBetween(start, it.date, end) }
     }
 
-    override fun findSalesEventsMetrics(date: LocalDate): Mono<SalesMetrics> {
-        return findSalesEvents(date).collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.ALL.category, it))
+    override fun findSalesEventsMetrics(dateString: String): Mono<SalesMetrics> {
+        return findSalesEvents(dateString).collectList().flatMap {
+            Mono.just(SalesMetrics(SalesMetrics.Category.ADHOC.category, it))
         }
     }
 
@@ -141,7 +150,7 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
         }
     }
 
-    override fun findSalesEventsMetrics(from: LocalDate, to: LocalDate): Mono<SalesMetrics> {
+    override fun findSalesEventsMetrics(from: String, to: String): Mono<SalesMetrics> {
         return findSalesEvents(from, to).collectList().flatMap {
             Mono.just(SalesMetrics(SalesMetrics.Category.ADHOC.category, it))
         }
