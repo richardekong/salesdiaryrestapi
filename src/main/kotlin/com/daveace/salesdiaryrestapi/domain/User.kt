@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.objectMapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.security.core.GrantedAuthority
@@ -17,7 +18,7 @@ data class User(
         var email: String = "",
         @field:Size(min = MIN_PASSWORD_SIZE, message = PASSWORD_SIZE_VAL_MSG)
         var userPassword: String = ""
-) : UserDetails {
+) : UserDetails, Mappable {
     var trader: Trader? = null
 
 

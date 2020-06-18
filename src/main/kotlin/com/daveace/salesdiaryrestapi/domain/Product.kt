@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.objectMapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDate
@@ -19,7 +20,7 @@ data class Product(
         @field:NotBlank(message = PRODUCT_CODE_VAL_MSG)
         var code: String = "",
         var imagePath: String = "",
-        val date: LocalDate = LocalDate.now()) {
+        val date: LocalDate = LocalDate.now()):Mappable {
 
     @field:DecimalMin("0.0")
     var stock: Double = 0.0

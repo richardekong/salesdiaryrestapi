@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.objectMapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.geo.Point
 import org.springframework.data.mongodb.core.mapping.Document
@@ -28,7 +29,7 @@ data class SalesEvent(
         var left: Double = 0.0,
         val date: LocalDate = LocalDate.now(),
         @field:NotNull
-        val location: MutableList<Double> = MutableList(2) { it * 0.0 }) {
+        val location: MutableList<Double> = MutableList(2) { it * 0.0 }):Mappable {
 
     constructor(traderId: String, customerId: String, productId:String, quantitySold: Double, costPrice: Double,
                 salesPrice: Double, left: Double, location: MutableList<Double>) : this() {

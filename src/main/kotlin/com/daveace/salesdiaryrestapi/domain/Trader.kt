@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.objectMapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import javax.validation.constraints.Email
@@ -21,7 +22,7 @@ data class Trader(
         var phone: String = "",
         @field:NotNull(message = ADDRESS_VAL_MSG)
         @field:Size(min = MIN_ADDRESS_SIZE)
-        var address: String = "") {
+        var address: String = "") : Mappable{
 
     companion object {
         val ROLES = arrayOf("USER", "TRADER")

@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.objectMapper.Mappable
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 data class SalesMetrics(
@@ -7,7 +8,7 @@ data class SalesMetrics(
         @JsonIgnore var events: MutableList<SalesEvent> = mutableListOf(),
         var totalCost: Double = 0.0,
         var totalSales: Double = 0.0,
-        var totalProfit: Double = 0.0) {
+        var totalProfit: Double = 0.0) : Mappable {
 
     enum class Category(val category: String) {
         ALL("all"),

@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.objectMapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.Field
@@ -13,7 +14,7 @@ import javax.validation.constraints.Size
 @Document
 data class Customer(
         @Id
-        val id:String = UUID.randomUUID().toString(),
+        val id: String = UUID.randomUUID().toString(),
         @field:Email(message = EMAIL_VAL_MSG)
         var email: String = "",
         @field:NotNull(message = NAME_VAL_MSG)
@@ -25,8 +26,7 @@ data class Customer(
         @Field(name = "signature_path")
         var signaturePath: String = "",
         @field:NotBlank(message = ADDRESS_VAL_MSG)
-        var address: String = ""
-) {
+        var address: String = "") : Mappable {
 
     companion object {
         val ROLES = arrayOf("USER", "CUSTOMER")
@@ -34,7 +34,7 @@ data class Customer(
 
     @field:NotNull
     var location: MutableList<Double> = mutableListOf()
-    var products:MutableList<Product> = mutableListOf()
+    var products: MutableList<Product> = mutableListOf()
 
     constructor() : this(email = "")
     constructor(email: String, name: String, traderId: String, company: String,
