@@ -1,6 +1,6 @@
 package com.daveace.salesdiaryrestapi.domain
 
-import com.daveace.salesdiaryrestapi.objectMapper.Mappable
+import com.daveace.salesdiaryrestapi.mapper.Mappable
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 data class SalesMetrics(

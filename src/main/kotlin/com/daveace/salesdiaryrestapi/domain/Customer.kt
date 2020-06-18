@@ -1,10 +1,9 @@
 package com.daveace.salesdiaryrestapi.domain
 
-import com.daveace.salesdiaryrestapi.objectMapper.Mappable
+import com.daveace.salesdiaryrestapi.mapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.Field
-import reactor.core.publisher.Mono
 import java.util.*
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank

@@ -1,13 +1,10 @@
 package com.daveace.salesdiaryrestapi.domain
 
-import com.daveace.salesdiaryrestapi.objectMapper.Mappable
+import com.daveace.salesdiaryrestapi.mapper.Mappable
 import org.springframework.data.annotation.Id
-import org.springframework.data.geo.Point
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.*
-import javax.persistence.*
 import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.NotNull
 
