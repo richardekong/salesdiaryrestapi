@@ -1,4 +1,4 @@
-package com.daveace.salesdiaryrestapi.objectMapper
+package com.daveace.salesdiaryrestapi.mapper
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
