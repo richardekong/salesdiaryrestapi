@@ -42,16 +42,16 @@ class SalesDiarySecurityContextRepository : ServerSecurityContextRepository {
                 Mono.just(it)
             }
         }
-    return Mono.empty()
-}
-
-private fun createReactiveSecurityContext(token: String): Mono<SecurityContext> {
-    val authentication: Authentication = UsernamePasswordAuthenticationToken(token, token)
-    return this.authenticationManager.authenticate(authentication).map {
-        val securityContext = SecurityContextImpl(it)
-        securityContext
+        return Mono.empty()
     }
-}
+
+    private fun createReactiveSecurityContext(token: String): Mono<SecurityContext> {
+        val authentication: Authentication = UsernamePasswordAuthenticationToken(token, token)
+        return this.authenticationManager.authenticate(authentication).map {
+            val securityContext = SecurityContextImpl(it)
+            securityContext
+        }
+    }
 
 }
 
