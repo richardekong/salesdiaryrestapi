@@ -8,9 +8,8 @@ interface Mappable {
         return ObjectMapper().convertValue(this, getMapInstance()::class.java)
     }
 
-    private fun getMapInstance(): MutableMap<String, Any?> {
-        return mutableMapOf()
-    }
+    private fun getMapInstance(): MutableMap<String, Any?> = mutableMapOf()
+
 
 }
 

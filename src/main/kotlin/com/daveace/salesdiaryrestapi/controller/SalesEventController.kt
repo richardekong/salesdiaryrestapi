@@ -23,7 +23,6 @@ import com.daveace.salesdiaryrestapi.hateoas.model.SalesMetricsModel
 import com.daveace.salesdiaryrestapi.service.ReactiveSalesEventService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
@@ -43,7 +42,6 @@ class SalesEventController : BaseController() {
 
     companion object {
         val TODAY: LocalDate = LocalDate.now()
-        private const val DATE_PATTERN = "yyyyMMdd"
     }
 
     @PostMapping(SALES_DIARY_SALES_EVENTS)

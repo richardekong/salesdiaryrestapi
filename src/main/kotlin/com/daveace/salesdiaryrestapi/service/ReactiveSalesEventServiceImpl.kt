@@ -19,25 +19,50 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
     private lateinit var salesEventRepo: ReactiveSalesEventRepository
     private lateinit var authenticatedUser: AuthenticatedUser
+    private lateinit var productService: ReactiveProductService
+    private lateinit var traderService: ReactiveTraderService
 
     companion object {
         private const val DATE_PATTERN = "yyyy-MM-dd"
     }
 
     @Autowired
-    constructor(salesEventRepo: ReactiveSalesEventRepository, authenticatedUser: AuthenticatedUser) : this() {
+    constructor(salesEventRepo: ReactiveSalesEventRepository,
+                authenticatedUser: AuthenticatedUser,
+                productService: ReactiveProductService,
+                traderService: ReactiveTraderService) : this() {
+
         this.salesEventRepo = salesEventRepo
         this.authenticatedUser = authenticatedUser
+        this.productService = productService
+        this.traderService = traderService
     }
 
     override fun saveSalesEvent(salesEvent: SalesEvent): Mono<SalesEvent> {
-        return authenticatedUser.ownsThisAccountById(salesEvent.traderId)
+        return authenticatedUser.getCurrentUser()
+                .filter { it.id == salesEvent.traderId }
+                .switchIfEmpty(throwAuthenticationException())
                 .flatMap { salesEventRepo.save(salesEvent) }
+                .doOnSuccess { event ->
+                    productService.apply {
+                        findProduct(event.productId)
+                                .filter { product -> product.stock > 0.0 }
+                                .flatMap { product ->
+                                    product.stock.dec()
+                                    save(product)
+                                }.doOnSuccess { product ->
+                                    traderService.apply {
+                                        updateTraderProduct(event.traderId, product.toMap(), product.id)
+                                                .subscribe()
+                                    }
+                                }.subscribe()
+                    }
+                }
     }
 
     override fun findSalesEvent(id: String): Mono<SalesEvent> {
         return authenticatedUser.getCurrentUser()
-                .flatMap {currentUser ->
+                .flatMap { currentUser ->
                     salesEventRepo.findById(id)
                             .filter { currentUser.id == it.traderId }
                             .switchIfEmpty(throwAuthenticationException())
@@ -49,7 +74,7 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     }
 
     override fun findSalesEvents(dateString: String): Flux<SalesEvent> {
-        val date : LocalDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        val date: LocalDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
         return authenticatedUser.getCurrentUser()
                 .flatMapMany { currentUser ->
                     salesEventRepo.findSalesEventsByDate(date)
@@ -103,8 +128,8 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     }
 
     override fun findSalesEvents(from: String, to: String): Flux<SalesEvent> {
-        val start:LocalDate = LocalDate.parse(from, DateTimeFormatter.ofPattern(DATE_PATTERN))
-        val end:LocalDate = LocalDate.parse(to, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        val start: LocalDate = LocalDate.parse(from, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        val end: LocalDate = LocalDate.parse(to, DateTimeFormatter.ofPattern(DATE_PATTERN))
         return findAllTradersSalesEvents().filter { dateIsBetween(start, it.date, end) }
     }
 

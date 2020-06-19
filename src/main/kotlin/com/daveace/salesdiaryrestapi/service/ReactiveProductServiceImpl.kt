@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import org.springframework.http.HttpStatus
+import javax.validation.constraints.NotNull
 
 @Service
 class ReactiveProductServiceImpl : ReactiveProductService {
@@ -17,6 +18,11 @@ class ReactiveProductServiceImpl : ReactiveProductService {
 
     @Autowired
     private lateinit var authenticatedUser: AuthenticatedUser
+
+
+    override fun save(@NotNull product: Product): Mono<Product> {
+        return productRepo.save(product)
+    }
 
     override fun saveIfAbsent(product: Product): Mono<Product> {
         return existsByName(product.name)
