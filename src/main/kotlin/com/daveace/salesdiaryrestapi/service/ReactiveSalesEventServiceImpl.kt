@@ -3,7 +3,7 @@ package com.daveace.salesdiaryrestapi.service
 import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
 import com.daveace.salesdiaryrestapi.domain.SalesMetrics
-import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
+import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
 import com.daveace.salesdiaryrestapi.repository.ReactiveSalesEventRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,6 +13,8 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
 
 @Service
 class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
@@ -24,6 +26,9 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
     companion object {
         private const val DATE_PATTERN = "yyyy-MM-dd"
+        private const val PRODUCT_OUT_OF_STOCK = "Product is out of stock!"
+        private const val PRODUCT_NOT_ENOUGH = "Product is not enough!"
+        private const val INVALID_DATE_RANGE = "Invalid Date range!"
     }
 
     @Autowired
@@ -39,159 +44,111 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     }
 
     override fun saveSalesEvent(salesEvent: SalesEvent): Mono<SalesEvent> {
-        return authenticatedUser.getCurrentUser()
-                .filter { it.id == salesEvent.traderId }
-                .switchIfEmpty(throwAuthenticationException())
-                .flatMap { salesEventRepo.save(salesEvent) }
-                .doOnSuccess { event ->
-                    productService.apply {
-                        findProduct(event.productId)
-                                .filter { product -> product.stock > 0.0 }
-                                .flatMap { product ->
-                                    product.stock.dec()
-                                    save(product)
-                                }.doOnSuccess { product ->
-                                    traderService.apply {
-                                        updateTraderProduct(event.traderId, product.toMap(), product.id)
-                                                .subscribe()
-                                    }
-                                }.subscribe()
+        return productService.run {
+            findProduct(salesEvent.productId)
+                    .filter { it.stock > 0.0 }
+                    .switchIfEmpty(Mono.fromRunnable { throw RestException(PRODUCT_OUT_OF_STOCK) })
+                    .filter { it.stock >= salesEvent.quantitySold }
+                    .switchIfEmpty(Mono.fromRunnable { throw RestException(PRODUCT_NOT_ENOUGH) })
+                    .flatMap {
+                        it.apply { stock -= salesEvent.quantitySold }
+                        save(it)
+                        traderService.updateTraderProduct(salesEvent.traderId, it.toMap(), it.id)
                     }
-                }
+        }.flatMap {
+            salesEvent.left = it.stock
+            salesEventRepo.save(salesEvent)
+        }
+
     }
 
     override fun findSalesEvent(id: String): Mono<SalesEvent> {
-        return authenticatedUser.getCurrentUser()
-                .flatMap { currentUser ->
-                    salesEventRepo.findById(id)
-                            .filter { currentUser.id == it.traderId }
-                            .switchIfEmpty(throwAuthenticationException())
-                }
+        return salesEventRepo.findById(id)
     }
 
     override fun findSalesEvents(): Flux<SalesEvent> {
-        return findAllTradersSalesEvents()
+        return salesEventRepo.findAll()
     }
 
     override fun findSalesEvents(dateString: String): Flux<SalesEvent> {
-        val date: LocalDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
-        return authenticatedUser.getCurrentUser()
-                .flatMapMany { currentUser ->
-                    salesEventRepo.findSalesEventsByDate(date)
-                            .filter { currentUser.id == it.traderId }
-                            .switchIfEmpty(throwAuthenticationException())
-                }.switchIfEmpty(throwRestException())
+        return Mono.just(LocalDate.parse(dateString, DateTimeFormatter.ofPattern(DATE_PATTERN)))
+                .flatMapMany {
+                    salesEventRepo.findSalesEventsByDate(it)
+                }
     }
 
     override fun findDailySalesEvents(): Flux<SalesEvent> {
-        return findAllTradersSalesEvents().filter {
-            val startTime: LocalDate = LocalDate.now().minusDays(1)
-            dateIsBetween(startTime, it.date)
-        }.switchIfEmpty(throwRestException())
+        return fetchEventsWithin(LocalDate.now().minusDays(1).toString())
     }
 
     override fun findWeeklySalesEvents(): Flux<SalesEvent> {
-        return findAllTradersSalesEvents().filter {
-            val startTime: LocalDate = LocalDate.now().minusDays(7)
-            dateIsBetween(startTime, it.date)
-        }.switchIfEmpty(throwRestException())
+        return fetchEventsWithin(LocalDate.now().minusDays(7).toString())
     }
 
     override fun findMonthlySalesEvents(): Flux<SalesEvent> {
-        return findAllTradersSalesEvents().filter {
-            val startTime: LocalDate = LocalDate.now().minusMonths(1)
-            dateIsBetween(startTime, it.date)
-        }.switchIfEmpty(throwRestException())
+        return fetchEventsWithin(LocalDate.now().minusMonths(1).toString())
 
     }
 
     override fun findQuarterlySalesEvents(): Flux<SalesEvent> {
-        return findAllTradersSalesEvents().filter {
-            val startTime: LocalDate = LocalDate.now().minusMonths(3)
-            dateIsBetween(startTime, it.date)
-        }.switchIfEmpty(throwRestException())
+        return fetchEventsWithin(LocalDate.now().minusMonths(3).toString())
     }
 
-
     override fun findSemesterSalesEvents(): Flux<SalesEvent> {
-        return findAllTradersSalesEvents().filter {
-            val startTime: LocalDate = LocalDate.now().minusMonths(6)
-            dateIsBetween(startTime, it.date)
-        }.switchIfEmpty(throwRestException())
+        return fetchEventsWithin(LocalDate.now().minusMonths(6).toString())
     }
 
     override fun findYearlySalesEvents(): Flux<SalesEvent> {
-        return findAllTradersSalesEvents().filter {
-            val startTime: LocalDate = LocalDate.now().minusYears(1)
-            dateIsBetween(startTime, it.date)
-        }.switchIfEmpty(throwRestException())
+        return fetchEventsWithin(LocalDate.now().minusYears(1).toString())
     }
 
     override fun findSalesEvents(from: String, to: String): Flux<SalesEvent> {
-        val start: LocalDate = LocalDate.parse(from, DateTimeFormatter.ofPattern(DATE_PATTERN))
-        val end: LocalDate = LocalDate.parse(to, DateTimeFormatter.ofPattern(DATE_PATTERN))
-        return findAllTradersSalesEvents().filter { dateIsBetween(start, it.date, end) }
+        return fetchEventsWithin(from, to)
     }
 
-    override fun findSalesEventsMetrics(dateString: String): Mono<SalesMetrics> {
-        return findSalesEvents(dateString).collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.ADHOC.category, it))
-        }
+    override fun findSalesEventsMetrics(dateString: String, currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findSalesEvents(dateString), currentUser, SalesMetrics.Category.ADHOC.category)
     }
 
-    override fun findDailySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findDailySalesEvents().collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.DAILY.category, it))
-        }
+    override fun findDailySalesEventsMetrics(currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findDailySalesEvents(), currentUser, SalesMetrics.Category.DAILY.category)
     }
 
-    override fun findWeeklySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findWeeklySalesEvents().collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.WEEKLY.category, it))
-        }
+    override fun findWeeklySalesEventsMetrics(currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findWeeklySalesEvents(), currentUser, SalesMetrics.Category.WEEKLY.category)
     }
 
-    override fun findMonthlySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findMonthlySalesEvents().collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.MONTHLY.category, it))
-        }
+    override fun findMonthlySalesEventsMetrics(currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findMonthlySalesEvents(), currentUser, SalesMetrics.Category.MONTHLY.category)
     }
 
-    override fun findQuarterlySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findQuarterlySalesEvents().collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.QUARTER.category, it))
-        }
+    override fun findQuarterlySalesEventsMetrics(currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findQuarterlySalesEvents(), currentUser, SalesMetrics.Category.QUARTER.category)
     }
 
-    override fun findSemesterSalesEventsMetrics(): Mono<SalesMetrics> {
-        return findSemesterSalesEvents().collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.SEMESTER.category, it))
-        }
+    override fun findSemesterSalesEventsMetrics(currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findSemesterSalesEvents(), currentUser, SalesMetrics.Category.SEMESTER.category)
     }
 
-    override fun findYearlySalesEventsMetrics(): Mono<SalesMetrics> {
-        return findYearlySalesEvents().collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.YEARLY.category, it))
-        }
+    override fun findYearlySalesEventsMetrics(currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findYearlySalesEvents(), currentUser, SalesMetrics.Category.YEARLY.category)
     }
 
-    override fun findSalesEventsMetrics(from: String, to: String): Mono<SalesMetrics> {
-        return findSalesEvents(from, to).collectList().flatMap {
-            Mono.just(SalesMetrics(SalesMetrics.Category.ADHOC.category, it))
-        }
+    override fun findSalesEventsMetrics(from: String, to: String, currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findSalesEvents(from, to), currentUser, SalesMetrics.Category.ADHOC.category)
     }
 
-    private fun findAllTradersSalesEvents(): Flux<SalesEvent> {
-        return authenticatedUser.getCurrentUser()
-                .flatMapMany { currentUser ->
-                    salesEventRepo.findAll()
-                            .filter { (currentUser.id == it.traderId) }
-                            .switchIfEmpty(throwAuthenticationException())
-                }
+    private fun fetchEventsWithin(startDateString: String, endDateString: String = LocalDate.now().toString()): Flux<SalesEvent> {
+        val startDate = LocalDate.parse(startDateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        val endDate = LocalDate.parse(endDateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        return findSalesEvents().filter { dateIsBetween(startDate, it.date, endDate) }.switchIfEmpty(throwRestException())
     }
 
-    private fun <T> throwAuthenticationException(): Mono<T> {
-        return Mono.fromRunnable { throw AuthenticationException(HttpStatus.UNAUTHORIZED.reasonPhrase) }
+    private fun generateSalesMetrics(@NotNull events: Flux<SalesEvent>, @NotNull currentUser: User, @NotBlank category: String): Mono<SalesMetrics> {
+        return events.filter { currentUser.id == it.traderId }
+                .switchIfEmpty(throwRestException())
+                .collectList()
+                .flatMap { Mono.just(SalesMetrics(category, it)) }
     }
 
     private fun <T> throwRestException(): Mono<T> {
@@ -200,7 +157,7 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
     private fun dateIsBetween(startDate: LocalDate, providedDate: LocalDate, endDate: LocalDate = LocalDate.now()): Boolean {
         if (startDate.isAfter(endDate).or(startDate.isEqual(endDate)))
-            throw RuntimeException("Invalid Date range!")
+            throw RuntimeException(INVALID_DATE_RANGE)
         return (startDate.isEqual(providedDate).or(startDate.isBefore(providedDate)))
                 .and(endDate.isEqual(providedDate).or(endDate.isAfter(providedDate)))
     }
