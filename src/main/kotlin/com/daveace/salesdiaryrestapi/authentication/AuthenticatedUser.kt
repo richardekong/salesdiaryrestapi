@@ -24,6 +24,29 @@ class AuthenticatedUser {
                 })
     }
 
+    fun isCurrentUserAuthorizedByEmail(email: String): Mono<Boolean> {
+        return getCurrentUser()
+                .filter { it.email == email }
+                .switchIfEmpty(Mono.fromRunnable{
+                    throw AuthenticationException(
+                            HttpStatus.UNAUTHORIZED.reasonPhrase
+                    )
+                })
+                .map { it != null }
+
+    }
+
+    fun isCurrentUserAuthorizedById(id: String): Mono<Boolean> {
+        return getCurrentUser()
+                .filter { it.id == id }
+                .switchIfEmpty(Mono.fromRunnable{
+                    throw AuthenticationException(
+                            HttpStatus.UNAUTHORIZED.reasonPhrase
+                    )
+                })
+                .map { it != null }
+    }
+
     fun ownsThisAccountById(id: String): Mono<Boolean> {
         return getCurrentUser().filter { it.id == id }.map { it != null }
     }
