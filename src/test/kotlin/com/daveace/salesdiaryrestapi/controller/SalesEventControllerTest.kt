@@ -273,7 +273,7 @@ class SalesEventControllerTest : BaseTests() {
         val endpoint = "$API$SALES_DIARY_SALES_EVENTS_METRICS/$dateString"
         val expectedSalesMetrics = SalesMetrics(SalesMetrics.Category.ADHOC.category, mutableListOf(testEvent))
         val expectedSalesMetricsMono: Mono<SalesMetrics> = Mono.just(expectedSalesMetrics)
-        `when`(eventService.findSalesEventsMetrics(dateString)).thenReturn(expectedSalesMetricsMono)
+        `when`(eventService.findSalesEventsMetrics(dateString, testUser)).thenReturn(expectedSalesMetricsMono)
         testResponseForSalesMetrics(endpoint, expectedSalesMetrics)
     }
 
@@ -283,7 +283,7 @@ class SalesEventControllerTest : BaseTests() {
         val endpoint = "$API$SALES_DIARY_DAILY_SALES_EVENTS_METRICS"
         val expectedSalesMetrics = SalesMetrics(SalesMetrics.Category.DAILY.category, mutableListOf(testEvent))
         val expectedSalesMetricsMono: Mono<SalesMetrics> = Mono.just(expectedSalesMetrics)
-        `when`(eventService.findDailySalesEventsMetrics()).thenReturn(expectedSalesMetricsMono)
+        `when`(eventService.findDailySalesEventsMetrics(testUser)).thenReturn(expectedSalesMetricsMono)
         testResponseForSalesMetrics(endpoint, expectedSalesMetrics)
     }
 
@@ -293,7 +293,7 @@ class SalesEventControllerTest : BaseTests() {
         val endpoint = "$API$SALES_DIARY_WEEKLY_SALES_EVENTS_METRICS"
         val expectedSalesMetrics = SalesMetrics(SalesMetrics.Category.WEEKLY.category, mutableListOf(testEvent))
         val expectedSalesMetricsMono: Mono<SalesMetrics> = Mono.just(expectedSalesMetrics)
-        `when`(eventService.findWeeklySalesEventsMetrics()).thenReturn(expectedSalesMetricsMono)
+        `when`(eventService.findWeeklySalesEventsMetrics(testUser)).thenReturn(expectedSalesMetricsMono)
         testResponseForSalesMetrics(endpoint, expectedSalesMetrics)
 
     }
@@ -304,7 +304,7 @@ class SalesEventControllerTest : BaseTests() {
         val endpoint = "$API$SALES_DIARY_MONTHLY_SALES_EVENTS_METRICS"
         val expectedSalesMetrics = SalesMetrics(SalesMetrics.Category.MONTHLY.category, mutableListOf(testEvent))
         val expectedSalesMetricsMono: Mono<SalesMetrics> = Mono.just(expectedSalesMetrics)
-        `when`(eventService.findMonthlySalesEventsMetrics()).thenReturn(expectedSalesMetricsMono)
+        `when`(eventService.findMonthlySalesEventsMetrics(testUser)).thenReturn(expectedSalesMetricsMono)
         testResponseForSalesMetrics(endpoint, expectedSalesMetrics)
     }
 
@@ -314,7 +314,7 @@ class SalesEventControllerTest : BaseTests() {
         val endpoint = "$API$SALES_DIARY_QUARTERLY_SALES_EVENTS_METRICS"
         val expectedSalesMetrics = SalesMetrics(SalesMetrics.Category.QUARTER.category, mutableListOf(testEvent))
         val expectedSalesMetricsMono: Mono<SalesMetrics> = Mono.just(expectedSalesMetrics)
-        `when`(eventService.findQuarterlySalesEventsMetrics()).thenReturn(expectedSalesMetricsMono)
+        `when`(eventService.findQuarterlySalesEventsMetrics(testUser)).thenReturn(expectedSalesMetricsMono)
         testResponseForSalesMetrics(endpoint, expectedSalesMetrics)
 
     }
@@ -325,7 +325,7 @@ class SalesEventControllerTest : BaseTests() {
         val endpoint = "$API$SALES_DIARY_SEMESTER_SALES_EVENTS_METRICS"
         val expectedSalesMetrics = SalesMetrics(SalesMetrics.Category.SEMESTER.category, mutableListOf(testEvent))
         val expectedSalesMetricsMono: Mono<SalesMetrics> = Mono.just(expectedSalesMetrics)
-        `when`(eventService.findSemesterSalesEventsMetrics()).thenReturn(expectedSalesMetricsMono)
+        `when`(eventService.findSemesterSalesEventsMetrics(testUser)).thenReturn(expectedSalesMetricsMono)
         testResponseForSalesMetrics(endpoint, expectedSalesMetrics)
     }
 
@@ -335,7 +335,7 @@ class SalesEventControllerTest : BaseTests() {
         val endpoint = "$API$SALES_DIARY_YEARLY_SALES_EVENTS_METRICS"
         val expectedSalesMetrics = SalesMetrics(SalesMetrics.Category.YEARLY.category, mutableListOf(testEvent))
         val expectedSalesMetricsMono: Mono<SalesMetrics> = Mono.just(expectedSalesMetrics)
-        `when`(eventService.findYearlySalesEventsMetrics()).thenReturn(expectedSalesMetricsMono)
+        `when`(eventService.findYearlySalesEventsMetrics(testUser)).thenReturn(expectedSalesMetricsMono)
         testResponseForSalesMetrics(endpoint, expectedSalesMetrics)
     }
 
@@ -347,7 +347,7 @@ class SalesEventControllerTest : BaseTests() {
         val endpoint = "$API$SALES_DIARY_SALES_EVENTS_METRICS/period?from=$from&to=$to"
         val expectedSalesMetrics = SalesMetrics(SalesMetrics.Category.ADHOC.category, mutableListOf(testEvent))
         val expectedSalesMetricsMono: Mono<SalesMetrics> = Mono.just(expectedSalesMetrics)
-        `when`(eventService.findSalesEventsMetrics(from, to)).thenReturn(expectedSalesMetricsMono)
+        `when`(eventService.findSalesEventsMetrics(from, to, testUser)).thenReturn(expectedSalesMetricsMono)
         testResponseForSalesMetrics(endpoint, expectedSalesMetrics)
     }
 
