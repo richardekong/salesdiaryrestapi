@@ -2,6 +2,7 @@ package com.daveace.salesdiaryrestapi.service
 
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
 import com.daveace.salesdiaryrestapi.domain.SalesMetrics
+import com.daveace.salesdiaryrestapi.domain.User
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDate
@@ -21,13 +22,13 @@ interface ReactiveSalesEventService {
     fun findSemesterSalesEvents(): Flux<SalesEvent>
     fun findYearlySalesEvents(): Flux<SalesEvent>
     fun findSalesEvents(from: String, to: String): Flux<SalesEvent>
-    fun findSalesEventsMetrics(dateString: String): Mono<SalesMetrics>
-    fun findDailySalesEventsMetrics(): Mono<SalesMetrics>
-    fun findWeeklySalesEventsMetrics(): Mono<SalesMetrics>
-    fun findMonthlySalesEventsMetrics(): Mono<SalesMetrics>
-    fun findQuarterlySalesEventsMetrics(): Mono<SalesMetrics>
-    fun findSemesterSalesEventsMetrics(): Mono<SalesMetrics>
-    fun findYearlySalesEventsMetrics(): Mono<SalesMetrics>
-    fun findSalesEventsMetrics(from: String, to: String): Mono<SalesMetrics>
+    fun findSalesEventsMetrics(dateString: String, currentUser:User): Mono<SalesMetrics>
+    fun findDailySalesEventsMetrics(currentUser:User): Mono<SalesMetrics>
+    fun findWeeklySalesEventsMetrics(currentUser:User): Mono<SalesMetrics>
+    fun findMonthlySalesEventsMetrics(currentUser:User): Mono<SalesMetrics>
+    fun findQuarterlySalesEventsMetrics(currentUser:User): Mono<SalesMetrics>
+    fun findSemesterSalesEventsMetrics(currentUser:User): Mono<SalesMetrics>
+    fun findYearlySalesEventsMetrics(currentUser: User): Mono<SalesMetrics>
+    fun findSalesEventsMetrics(from: String, to: String, currentUser: User): Mono<SalesMetrics>
 
 }
