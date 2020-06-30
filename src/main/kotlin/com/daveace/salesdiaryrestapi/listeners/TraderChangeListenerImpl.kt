@@ -23,6 +23,7 @@ class TraderChangeListenerImpl : TraderChangeListener {
         private const val PHONE = "phone"
         private const val ADDRESS = "address"
         private const val LOCATION = "location"
+        private const val SIGNATURE_PATH = "signaturePath"
         private const val COMPANY = "company"
         private const val STOCK = "stock"
         private const val COST = "cost"
@@ -109,6 +110,8 @@ class TraderChangeListenerImpl : TraderChangeListener {
                         customerToUpdate.address = customer[ADDRESS] as String
                     if (customer.containsKey(COMPANY) && (customer[COMPANY] as String).isNotEmpty())
                         customerToUpdate.company = customer[COMPANY] as String
+                    if (customer.containsKey(SIGNATURE_PATH) && (customer[SIGNATURE_PATH] as String).isNotEmpty())
+                        customerToUpdate.signaturePath = customer[SIGNATURE_PATH] as String
                     if (customer.containsKey(LOCATION) && isLocationValidFor(customer)) {
                         customerToUpdate.location = mutableListOf()
                         val location: MutableList<*> = customer[LOCATION] as MutableList<*>
