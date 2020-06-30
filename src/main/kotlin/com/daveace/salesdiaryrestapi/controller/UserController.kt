@@ -1,8 +1,5 @@
 package com.daveace.salesdiaryrestapi.controller
 
-import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
-import com.daveace.salesdiaryrestapi.authentication.TokenUtil
-import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_LOGIN_USERS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_AUTH_PASSWORD_RESET_LINK
@@ -15,10 +12,8 @@ import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
 import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
 import com.daveace.salesdiaryrestapi.hateoas.assembler.UserModelAssembler
-import com.daveace.salesdiaryrestapi.hateoas.link.ReactiveLinkSupport
 import com.daveace.salesdiaryrestapi.hateoas.model.TokenModel
 import com.daveace.salesdiaryrestapi.hateoas.model.UserModel
-import com.daveace.salesdiaryrestapi.page.Paginator
 import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
 import com.daveace.salesdiaryrestapi.service.ReactiveUserService
 import com.daveace.salesdiaryrestapi.service.SalesDiaryPasswordEncoderService
@@ -37,14 +32,10 @@ import javax.validation.constraints.Size
 
 @RestController
 @RequestMapping(API)
-class UserController() : ReactiveLinkSupport {
+class UserController() : BaseController() {
 
     private lateinit var userService: ReactiveUserService
     private lateinit var encoderService: SalesDiaryPasswordEncoderService
-    private lateinit var tokenUtil: TokenUtil
-    private lateinit var paginator: Paginator
-    private lateinit var sortProps: SortConfigurationProperties
-    private lateinit var authenticatedUser: AuthenticatedUser
 
     companion object {
         const val WRONG_CREDENTIAL = "Wrong email or password!"
@@ -58,26 +49,6 @@ class UserController() : ReactiveLinkSupport {
     constructor(userService: ReactiveUserService, encoderService: SalesDiaryPasswordEncoderService) : this() {
         this.userService = userService
         this.encoderService = encoderService
-    }
-
-    @Autowired
-    fun setTokenUtil(tokenUtil: TokenUtil) {
-        this.tokenUtil = tokenUtil
-    }
-
-    @Autowired
-    fun setPaginator(paginator: Paginator) {
-        this.paginator = paginator
-    }
-
-    @Autowired
-    fun setSortProps(sortProps: SortConfigurationProperties) {
-        this.sortProps = sortProps
-    }
-
-    @Autowired
-    fun setAuthenticatedUser(authenticatedUser: AuthenticatedUser) {
-        this.authenticatedUser = authenticatedUser
     }
 
     @PostMapping(SALES_DIARY_AUTH_SIGN_UP_USERS, produces = ["application/json"])
@@ -193,8 +164,13 @@ class UserController() : ReactiveLinkSupport {
     @DeleteMapping("$SALES_DIARY_USER{email}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     fun deleteUser(@PathVariable email: String): Mono<Void> {
-        return userService.deleteUserByEmail(email)
-                .doOnSuccess { InMemoryTokenStore.revokeToken(email) }
+        return authenticatedUser.isCurrentUserAuthorizedByEmail(email)
+                .flatMap {
+                    userService.deleteUserByEmail(email)
+                            .doOnSuccess { InMemoryTokenStore.revokeToken(email) }
+                }
+
+
     }
 
 }
