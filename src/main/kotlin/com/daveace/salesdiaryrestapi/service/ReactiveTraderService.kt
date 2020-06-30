@@ -18,7 +18,7 @@ interface ReactiveTraderService {
     fun findTraderProducts(traderId: String): Flux<Product>
     fun findTraderCustomer(traderId: String, customerEmail: String): Mono<Customer>
     fun findTraderCustomers(traderId: String): Flux<Customer>
-    fun <V> updateTrader(trader: MutableMap<String, V>): Mono<Trader>
+    fun <V> updateTrader(traderId:String, trader: MutableMap<String, V>): Mono<Trader>
     fun <V> updateTraderCustomer(traderId: String, customer: MutableMap<String, V>, customerEmail: String): Mono<Customer>
     fun <V> updateTraderProduct(traderId: String, product: MutableMap<String, V>, productId: String): Mono<Product>
     fun deleteTraderProduct(traderId: String, productId: String): Mono<Void>
