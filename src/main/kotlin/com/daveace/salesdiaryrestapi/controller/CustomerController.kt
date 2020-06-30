@@ -1,13 +1,10 @@
 package com.daveace.salesdiaryrestapi.controller
 
-import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_CUSTOMER
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_CUSTOMERS
 import com.daveace.salesdiaryrestapi.hateoas.assembler.CustomerModelAssembler
-import com.daveace.salesdiaryrestapi.hateoas.link.ReactiveLinkSupport
 import com.daveace.salesdiaryrestapi.hateoas.model.CustomerModel
-import com.daveace.salesdiaryrestapi.page.Paginator
 import com.daveace.salesdiaryrestapi.service.ReactiveCustomerService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -20,11 +17,9 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping(API)
-class CustomerController() : ReactiveLinkSupport {
+class CustomerController() : BaseController() {
 
     private lateinit var customerService: ReactiveCustomerService
-    private lateinit var paginator: Paginator
-    private lateinit var sortProps: SortConfigurationProperties
 
     companion object {
         const val DEFAULT_SIZE = "1"
@@ -34,17 +29,12 @@ class CustomerController() : ReactiveLinkSupport {
     }
 
     @Autowired
-    constructor(
-            customerService: ReactiveCustomerService,
-            paginator: Paginator,
-            sortProps: SortConfigurationProperties) : this() {
+    constructor(customerService: ReactiveCustomerService) : this() {
         this.customerService = customerService
-        this.paginator = paginator
-        this.sortProps = sortProps
     }
 
     @GetMapping("$SALES_DIARY_CUSTOMER{email}")
-    fun findCustomerByEmail(@PathVariable email:String):Mono<CustomerModel>{
+    fun findCustomerByEmail(@PathVariable email: String): Mono<CustomerModel> {
         return customerService.findCustomerByEmail(email).flatMap {
             respondWithReactiveLink(CustomerModel(it), methodOn(this.javaClass).findCustomerByEmail(email))
         }
