@@ -72,7 +72,7 @@ class ReactiveCustomerServiceImpl() : ReactiveCustomerService {
                                 customer.traderId == currentUser.id
                             }
                             .switchIfEmpty(Mono.fromRunnable {
-                                throw RestException(HttpStatus.UNAUTHORIZED.reasonPhrase)
+                                throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
                             })
                 }
     }
