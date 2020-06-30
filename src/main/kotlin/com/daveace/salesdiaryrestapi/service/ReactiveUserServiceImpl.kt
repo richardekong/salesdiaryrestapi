@@ -1,6 +1,5 @@
 package com.daveace.salesdiaryrestapi.service
 
-import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.authentication.TokenUtil
 import com.daveace.salesdiaryrestapi.domain.Mail
 import com.daveace.salesdiaryrestapi.domain.Trader
@@ -27,7 +26,7 @@ class ReactiveUserServiceImpl : ReactiveUserService {
     private lateinit var customerRepo: ReactiveCustomerRepository
     private lateinit var encoderService: SalesDiaryPasswordEncoderService
     private lateinit var tokenUtil: TokenUtil
-    private lateinit var authenticatedUser: AuthenticatedUser
+
     private lateinit var mailService: MailService
 
     @Value("\${mailgun.api.email}")
@@ -61,11 +60,6 @@ class ReactiveUserServiceImpl : ReactiveUserService {
     @Autowired
     fun initTokenUtil(tokenUtil: TokenUtil) {
         this.tokenUtil = tokenUtil
-    }
-
-    @Autowired
-    fun initAuthenticatedUser(authenticatedUser: AuthenticatedUser) {
-        this.authenticatedUser = authenticatedUser
     }
 
     @Autowired
@@ -134,14 +128,14 @@ class ReactiveUserServiceImpl : ReactiveUserService {
     override fun deleteUserByEmail(email: String): Mono<Void> {
         val userId: String = repo.findUserByEmail(email).map { it.id }
                 .toFuture().join()
-        return authenticatedUser.ownsThisAccount(email)
-                .flatMap { currentUser ->
-                    repo.delete(currentUser)
+        return repo.findUserByEmail(email)
+                .flatMap { user ->
+                    repo.delete(user)
                 }.doOnSuccess {
                     deleteTraderByUserId(userId)
                     mailService.apply {
                         sendText(Mail(appEmail, email, "Sales Diary Account deletion",
-                                "Your subscription with Sales Diary Service has been terminated!"))
+                                "your subscription with Sales Diary Service has been terminated!"))
                     }
                 }
     }
