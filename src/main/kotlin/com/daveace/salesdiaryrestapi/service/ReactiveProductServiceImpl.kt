@@ -16,10 +16,6 @@ class ReactiveProductServiceImpl : ReactiveProductService {
     @Autowired
     private lateinit var productRepo: ReactiveProductRepository
 
-    @Autowired
-    private lateinit var authenticatedUser: AuthenticatedUser
-
-
     override fun save(@NotNull product: Product): Mono<Product> {
         return productRepo.save(product)
     }
@@ -44,16 +40,6 @@ class ReactiveProductServiceImpl : ReactiveProductService {
     }
 
     override fun findProduct(id: String): Mono<Product> {
-        return authenticatedUser.getCurrentUser()
-                .flatMap { currentUser ->
-                    productRepo.findById(id)
-                            .filter { product ->
-                                currentUser.id == product.traderId
-                            }
-                            .switchIfEmpty(Mono.fromRunnable {
-                                throw RestException(
-                                        HttpStatus.UNAUTHORIZED.reasonPhrase)
-                            })
-                }
+        return productRepo.findById(id)
     }
 }
