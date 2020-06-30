@@ -1,10 +1,10 @@
 package com.daveace.salesdiaryrestapi.service
 
-import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.domain.Customer
 import com.daveace.salesdiaryrestapi.domain.Mail
 import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.domain.Trader
+import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
 import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
 import com.daveace.salesdiaryrestapi.listeners.TraderChangeListener
 import com.daveace.salesdiaryrestapi.repository.ReactiveCustomerRepository
@@ -26,7 +26,6 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
     private lateinit var productService: ReactiveProductService
     private lateinit var customerService: ReactiveCustomerService
     private lateinit var customerRepo: ReactiveCustomerRepository
-    private lateinit var authenticatedUser: AuthenticatedUser
     private lateinit var traderChangeListener: TraderChangeListener
     private lateinit var mailService: MailService
 
@@ -56,11 +55,6 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
     @Autowired
     fun initCustomerService(customerService: ReactiveCustomerService) {
         this.customerService = customerService
-    }
-
-    @Autowired
-    fun initAuthenticatedUser(authenticatedUser: AuthenticatedUser) {
-        this.authenticatedUser = authenticatedUser
     }
 
     @Autowired
@@ -101,7 +95,7 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
     }
 
     override fun addProduct(traderEmail: String, product: Product): Mono<Product> {
-        return authenticatedUser.ownsThisAccount(traderEmail)
+        return findTrader(traderEmail)
                 .flatMap {
                     traderChangeListener.onAddProduct(it.id, product)
                 }
@@ -114,76 +108,61 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
     }
 
     override fun addCustomer(traderEmail: String, customer: Customer): Mono<Customer> {
-        return authenticatedUser.ownsThisAccount(traderEmail)
-                .flatMap {
-                    traderChangeListener.onAddCustomer(it.id, customer)
+        return findTrader(traderEmail)
+                .flatMap { trader ->
+                    traderChangeListener.onAddCustomer(trader.id, customer)
                 }
                 .flatMap { customerService.saveIfAbsent(customer) }
                 .doOnSuccess {
                     notifyByEmail(Mail(appEmail, traderEmail, "New Customer Addition",
                             "You have just registered ${it.name}."))
                 }
-
     }
 
     override fun findTraderProduct(traderId: String, productId: String): Mono<Product> {
-        return authenticatedUser.getCurrentUser()
-                .filter { traderId == it.id }
-                .switchIfEmpty(Mono.fromRunnable {
-                    throw unAuthorizedAccess()
-                }).flatMap { currentUser ->
-                    traderRepo.findById(currentUser.id)
-                            .flatMap { trader ->
-                                Mono.just(trader.products.asSequence()
-                                        .filter { it.id == productId }
-                                        .first())
-                            }.switchIfEmpty(Mono.fromRunnable {
-                                throw unAuthorizedAccess()
-                            })
-                }
-    }
-
-    override fun findTraderProducts(traderId: String): Flux<Product> {
-        return authenticatedUser.getCurrentUser()
-                .filter { traderId == it.id }
-                .switchIfEmpty(Mono.fromRunnable {
-                    throw unAuthorizedAccess()
-                }).flatMapMany {
-                    productRepo.findAll().filter { it.traderId == traderId }
-                }
-    }
-
-    override fun findTraderCustomer(traderId: String, customerEmail: String): Mono<Customer> {
-        return authenticatedUser.getCurrentUser()
-                .filter { it.id == traderId }
-                .switchIfEmpty(Mono.fromRunnable {
-                    throw unAuthorizedAccess()
-                }).flatMap {
-                    customerRepo.findCustomerByEmail(customerEmail)
-                            .filter { it.traderId == traderId }
-                            .switchIfEmpty(Mono.fromRunnable {
-                                throw unAuthorizedAccess()
-                            })
-                }
-    }
-
-    override fun findTraderCustomers(traderId: String): Flux<Customer> {
-        return authenticatedUser.getCurrentUser()
-                .flatMapMany { currentUser ->
-                    customerRepo.findAll().filter { customer ->
-                        (currentUser.id == traderId) && (traderId == customer.traderId)
-                    }.switchIfEmpty(Mono.fromRunnable {
+        return findTraderById(traderId)
+                .flatMap { trader ->
+                    Mono.just(trader.products.asSequence()
+                            .filter { it.id == productId }
+                            .first()
+                    ).switchIfEmpty(Mono.fromRunnable {
                         throw unAuthorizedAccess()
                     })
                 }
     }
 
-    override fun <V> updateTrader(trader: MutableMap<String, V>): Mono<Trader> {
-        return authenticatedUser.getCurrentUser()
-                .flatMap { currentUser ->
-                    traderChangeListener.onTraderUpdate(currentUser.id, trader)
-                }
-                .flatMap { storedTrader -> save(storedTrader) }
+    override fun findTraderProducts(traderId: String): Flux<Product> {
+        return productRepo
+                .findAll()
+                .filter { it.traderId == traderId }
+                .switchIfEmpty(Mono.fromRunnable {
+                    throw RestException(
+                            HttpStatus.NOT_FOUND.reasonPhrase
+                    )
+                })
+    }
+
+    override fun findTraderCustomer(traderId: String, customerEmail: String): Mono<Customer> {
+        return customerRepo.findCustomerByEmail(customerEmail)
+                .filter { it.traderId == traderId }
+                .switchIfEmpty(Mono.fromRunnable { throw unAuthorizedAccess() })
+    }
+
+    override fun findTraderCustomers(traderId: String): Flux<Customer> {
+        return customerRepo.findAll()
+                .filter { it.traderId == traderId }
+                .switchIfEmpty(Mono.fromRunnable {
+                    throw RestException(
+                            HttpStatus.NOT_FOUND.reasonPhrase
+                    )
+                })
+
+    }
+
+    override fun <V> updateTrader(traderId: String, trader: MutableMap<String, V>): Mono<Trader> {
+        return traderChangeListener
+                .onTraderUpdate(traderId, trader)
+                .flatMap { updatedTrader -> save(updatedTrader) }
                 .doOnSuccess {
                     notifyByEmail(Mail(appEmail, it.email, "Trader Account Update",
                             "Dear ${it.name}, You have successfully updated your details."))
@@ -192,11 +171,9 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
 
     override fun <V> updateTraderCustomer(traderId: String, customer: MutableMap<String, V>, customerEmail: String): Mono<Customer> {
         val trader: Trader = findTraderById(traderId).toFuture().join()
-        return authenticatedUser.getCurrentUser()
-                .filter { it.id == traderId }
-                .switchIfEmpty(Mono.fromRunnable { throw unAuthorizedAccess() })
-                .flatMap { traderChangeListener.onUpdateTraderCustomer(traderId, customerEmail, customer) }
-                .flatMap { storedCustomer -> customerRepo.save(storedCustomer) }
+        return traderChangeListener
+                .onUpdateTraderCustomer(traderId, customerEmail, customer)
+                .flatMap { customerRepo.save(it) }
                 .doOnSuccess {
                     notifyByEmail(Mail(appEmail, trader.email, "Customer Update",
                             "Dear ${trader.name}, you have successfully updated ${it.name}'s record."))
@@ -205,10 +182,12 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
 
     override fun <V> updateTraderProduct(traderId: String, product: MutableMap<String, V>, productId: String): Mono<Product> {
         val trader: Trader = findTraderById(traderId).toFuture().join()
-        return authenticatedUser.ownsThisAccountById(traderId)
-                .map { ownsAccount -> if (ownsAccount.not()) throw unAuthorizedAccess() }
-                .flatMap { traderChangeListener.onUpdateTraderProduct(traderId, product, productId) }
-                .flatMap { storedProduct -> productRepo.save(storedProduct) }
+        return traderChangeListener
+                .onUpdateTraderProduct(traderId, product, productId)
+                .switchIfEmpty(Mono.fromRunnable {
+                    throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
+                })
+                .flatMap { updatedProduct -> productRepo.save(updatedProduct) }
                 .doOnSuccess {
                     notifyByEmail(Mail(appEmail, trader.email, "Product Update",
                             "Dear ${trader.name}, you have updated details about ${it.name}."))
@@ -217,9 +196,8 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
 
     override fun deleteTraderProduct(traderId: String, productId: String): Mono<Void> {
         val trader: Trader = findTraderById(traderId).toFuture().join()
-        return authenticatedUser.ownsThisAccountById(traderId)
-                .map { if (it.not()) throw unAuthorizedAccess() }
-                .flatMap { traderChangeListener.onDeleteTraderProduct(traderId, productId) }
+        return traderChangeListener
+                .onDeleteTraderProduct(traderId, productId)
                 .flatMap { product -> productRepo.delete(product) }
                 .doOnSuccess {
                     notifyByEmail(Mail(appEmail, trader.email, "Product Deletion",
@@ -229,9 +207,7 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
 
     override fun deleteTraderCustomer(traderId: String, customerEmail: String): Mono<Void> {
         val trader: Trader = findTraderById(traderId).toFuture().join()
-        return authenticatedUser.ownsThisAccountById(traderId)
-                .map { if (it.not()) throw unAuthorizedAccess() }
-                .flatMap { traderChangeListener.onDeleteTraderCustomer(traderId, customerEmail) }
+        return traderChangeListener.onDeleteTraderCustomer(traderId, customerEmail)
                 .flatMap { customerRepo.delete(it) }
                 .doOnSuccess {
                     notifyByEmail(Mail(appEmail, trader.email, "Customer Deletion",
@@ -243,9 +219,10 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
         mailService.apply { sendText(notification) }
     }
 
-    private fun unAuthorizedAccess(): RuntimeException {
-        return RuntimeException(HttpStatus.UNAUTHORIZED.reasonPhrase)
+    private fun unAuthorizedAccess(): AuthenticationException {
+        return AuthenticationException(HttpStatus.UNAUTHORIZED.reasonPhrase)
     }
+
 
 }
 
