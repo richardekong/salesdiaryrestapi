@@ -34,7 +34,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
-class TraderControllerTest: BaseTests(){
+class TraderControllerTest : BaseTests() {
 
     @MockBean
     private lateinit var traderRepo: ReactiveTraderRepository
@@ -121,6 +121,7 @@ class TraderControllerTest: BaseTests(){
                 .jsonPath("$.imagePath").isEqualTo(testProduct.imagePath)
                 .jsonPath("$.stock").isEqualTo(testProduct.stock)
                 .jsonPath("$.cost").isEqualTo(testProduct.cost)
+
     }
 
     @Test
@@ -248,9 +249,11 @@ class TraderControllerTest: BaseTests(){
     @Test
     @Order(9)
     fun shouldUpdateTrader() {
-        val requestBody: MutableMap<String, Any> = mutableMapOf("phone" to "09047348344",
+        val requestBody: MutableMap<String, Any> = mutableMapOf(
+                "phone" to "09047348344",
                 "address" to "updated address 003",
-                "location" to mutableListOf(12.00, 14.934))
+                "location" to mutableListOf(12.00, 14.934)
+        )
         val endpoint = "$API$SALES_DIARY_TRADERS"
         val updatedTrader: Trader = testTrader.copy()
         updatedTrader.phone = requestBody["phone"] as String
@@ -259,7 +262,7 @@ class TraderControllerTest: BaseTests(){
             updatedTrader.location.add(it as Double)
         }
         val updatedTraderMono: Mono<Trader> = Mono.just(updatedTrader)
-        Mockito.`when`(traderService.updateTrader(requestBody)).thenReturn(updatedTraderMono)
+        Mockito.`when`(traderService.updateTrader(testTrader.id, requestBody)).thenReturn(updatedTraderMono)
         testClient.patch().uri(endpoint)
                 .header(AUTHORIZATION, "$PREFIX$authorizationToken")
                 .accept(APPLICATION_JSON)
