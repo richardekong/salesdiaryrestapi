@@ -1,8 +1,7 @@
 package com.daveace.salesdiaryrestapi.service
 
 import com.daveace.salesdiaryrestapi.BaseTests
-import com.daveace.salesdiaryrestapi.domain.SalesEvent
-import com.daveace.salesdiaryrestapi.domain.SalesMetrics
+import com.daveace.salesdiaryrestapi.domain.*
 import com.daveace.salesdiaryrestapi.repository.ReactiveSalesEventRepository
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -18,22 +17,26 @@ import java.time.LocalDate
 import kotlin.random.Random
 
 
-class ReactiveSalesEventServiceTests : BaseTests() {
+class ReactiveSalesEventServiceTests :BaseTests(){
 
     @MockBean
     private lateinit var testRepo: ReactiveSalesEventRepository
 
     @MockBean
     private lateinit var testEventService: ReactiveSalesEventService
+    private lateinit var testUser: User
+    private lateinit var testTrader:Trader
+    private lateinit var testCustomer:Customer
     private lateinit var testSalesEvent: SalesEvent
-
-    private fun createTestEvent(): SalesEvent {
-        return SalesEvent("TID004", "CID004", "PID004", 3.00, 200.00, 230.00, 5.00, mutableListOf(10.334, 34.084))
-    }
+    private lateinit var testProduct:Product
 
     @BeforeAll()
     fun initTest() {
-        testSalesEvent = createTestEvent()
+        testUser = createTestUser()
+        testTrader = createTestTrader(testUser)
+        testCustomer = createTestCustomer(testTrader)
+        testProduct = createTestProduct(testTrader)
+        testSalesEvent = createTestEvent(testTrader, testProduct, testCustomer)
     }
 
     @AfterAll()
@@ -162,11 +165,11 @@ class ReactiveSalesEventServiceTests : BaseTests() {
         val today: String = LocalDate.now().toString()
         val salesEventMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val salesEventMetricsMono: Mono<SalesMetrics> = Mono.just(salesEventMetrics)
-        Mockito.`when`(testEventService.findSalesEventsMetrics(today)).thenReturn(salesEventMetricsMono)
-        StepVerifier.create(testEventService.findSalesEventsMetrics(today))
+        Mockito.`when`(testEventService.findSalesEventsMetrics(today, testUser)).thenReturn(salesEventMetricsMono)
+        StepVerifier.create(testEventService.findSalesEventsMetrics(today, testUser))
                 .expectNext(salesEventMetrics)
                 .verifyComplete()
-        Mockito.verify(testEventService, times(1)).findSalesEventsMetrics(today)
+        Mockito.verify(testEventService, times(1)).findSalesEventsMetrics(today, testUser)
     }
 
     @Test
@@ -174,11 +177,11 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     fun shouldFindDailySalesEventsMetrics() {
         val dailySalesEventsMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val dailySalesEventsMetricsMono: Mono<SalesMetrics> = Mono.just(dailySalesEventsMetrics)
-        Mockito.`when`(testEventService.findDailySalesEventsMetrics()).thenReturn(dailySalesEventsMetricsMono)
-        StepVerifier.create(testEventService.findDailySalesEventsMetrics())
+        Mockito.`when`(testEventService.findDailySalesEventsMetrics(testUser)).thenReturn(dailySalesEventsMetricsMono)
+        StepVerifier.create(testEventService.findDailySalesEventsMetrics(testUser))
                 .expectNext(dailySalesEventsMetrics)
                 .verifyComplete()
-        Mockito.verify(testEventService, times(1)).findDailySalesEventsMetrics()
+        Mockito.verify(testEventService, times(1)).findDailySalesEventsMetrics(testUser)
     }
 
     @Test
@@ -186,11 +189,11 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     fun shouldFindWeeklySalesEventsMetrics() {
         val weeklySalesMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val weeklySalesMetricsMono: Mono<SalesMetrics> = Mono.just(weeklySalesMetrics)
-        Mockito.`when`(testEventService.findWeeklySalesEventsMetrics()).thenReturn(weeklySalesMetricsMono)
-        StepVerifier.create(testEventService.findWeeklySalesEventsMetrics())
+        Mockito.`when`(testEventService.findWeeklySalesEventsMetrics(testUser)).thenReturn(weeklySalesMetricsMono)
+        StepVerifier.create(testEventService.findWeeklySalesEventsMetrics(testUser))
                 .expectNext(weeklySalesMetrics)
                 .verifyComplete()
-        Mockito.verify(testEventService, times(1)).findWeeklySalesEventsMetrics()
+        Mockito.verify(testEventService, times(1)).findWeeklySalesEventsMetrics(testUser)
     }
 
     @Test
@@ -198,11 +201,11 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     fun shouldFindMonthlySalesEventsMetrics() {
         val monthlySalesMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val monthlySalesMetricsMono: Mono<SalesMetrics> = Mono.just(monthlySalesMetrics)
-        Mockito.`when`(testEventService.findMonthlySalesEventsMetrics()).thenReturn(monthlySalesMetricsMono)
-        StepVerifier.create(testEventService.findMonthlySalesEventsMetrics())
+        Mockito.`when`(testEventService.findMonthlySalesEventsMetrics(testUser)).thenReturn(monthlySalesMetricsMono)
+        StepVerifier.create(testEventService.findMonthlySalesEventsMetrics(testUser))
                 .expectNext(monthlySalesMetrics)
                 .verifyComplete()
-        Mockito.verify(testEventService, times(1)).findMonthlySalesEventsMetrics()
+        Mockito.verify(testEventService, times(1)).findMonthlySalesEventsMetrics(testUser)
 
     }
 
@@ -211,11 +214,11 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     fun shouldFindQuarterSalesEventsMetrics() {
         val quarterSalesMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val quarterSalesMetricsMono: Mono<SalesMetrics> = Mono.just(quarterSalesMetrics)
-        Mockito.`when`(testEventService.findQuarterlySalesEventsMetrics()).thenReturn(quarterSalesMetricsMono)
-        StepVerifier.create(testEventService.findQuarterlySalesEventsMetrics())
+        Mockito.`when`(testEventService.findQuarterlySalesEventsMetrics(testUser)).thenReturn(quarterSalesMetricsMono)
+        StepVerifier.create(testEventService.findQuarterlySalesEventsMetrics(testUser))
                 .expectNext(quarterSalesMetrics)
                 .verifyComplete()
-        Mockito.verify(testEventService, times(1)).findQuarterlySalesEventsMetrics()
+        Mockito.verify(testEventService, times(1)).findQuarterlySalesEventsMetrics(testUser)
     }
 
     @Test
@@ -223,11 +226,11 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     fun shouldFindSemesterSalesEventsMetrics() {
         val semesterSalesMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val semesterSalesMetricsMono: Mono<SalesMetrics> = Mono.just(semesterSalesMetrics)
-        Mockito.`when`(testEventService.findSemesterSalesEventsMetrics()).thenReturn(semesterSalesMetricsMono)
-        StepVerifier.create(testEventService.findSemesterSalesEventsMetrics())
+        Mockito.`when`(testEventService.findSemesterSalesEventsMetrics(testUser)).thenReturn(semesterSalesMetricsMono)
+        StepVerifier.create(testEventService.findSemesterSalesEventsMetrics(testUser))
                 .expectNext(semesterSalesMetrics)
                 .verifyComplete()
-        Mockito.verify(testEventService, times(1)).findSemesterSalesEventsMetrics()
+        Mockito.verify(testEventService, times(1)).findSemesterSalesEventsMetrics(testUser)
     }
 
     @Test
@@ -235,11 +238,11 @@ class ReactiveSalesEventServiceTests : BaseTests() {
     fun shouldFindYearlySalesEventsMetrics() {
         val yearlySalesMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val yearlySalesMetricsMono: Mono<SalesMetrics> = Mono.just(yearlySalesMetrics)
-        Mockito.`when`(testEventService.findYearlySalesEventsMetrics()).thenReturn(yearlySalesMetricsMono)
-        StepVerifier.create(testEventService.findYearlySalesEventsMetrics())
+        Mockito.`when`(testEventService.findYearlySalesEventsMetrics(testUser)).thenReturn(yearlySalesMetricsMono)
+        StepVerifier.create(testEventService.findYearlySalesEventsMetrics(testUser))
                 .expectNext(yearlySalesMetrics)
                 .verifyComplete()
-        Mockito.verify(testEventService, times(1)).findYearlySalesEventsMetrics()
+        Mockito.verify(testEventService, times(1)).findYearlySalesEventsMetrics(testUser)
     }
 
     @Test
@@ -250,11 +253,11 @@ class ReactiveSalesEventServiceTests : BaseTests() {
         val to: String = LocalDate.now().toString()
         val salesMetrics = SalesMetrics(mutableListOf(testSalesEvent))
         val salesMetricsMono: Mono<SalesMetrics> = Mono.just(salesMetrics)
-        Mockito.`when`(testEventService.findSalesEventsMetrics(from, to)).thenReturn(salesMetricsMono)
-        StepVerifier.create(testEventService.findSalesEventsMetrics(from, to))
+        Mockito.`when`(testEventService.findSalesEventsMetrics(from, to, testUser)).thenReturn(salesMetricsMono)
+        StepVerifier.create(testEventService.findSalesEventsMetrics(from, to, testUser))
                 .expectNext(salesMetrics)
                 .verifyComplete()
-        Mockito.verify(testEventService, times(1)).findSalesEventsMetrics(from, to)
+        Mockito.verify(testEventService, times(1)).findSalesEventsMetrics(from, to, testUser)
     }
 
     @Test
