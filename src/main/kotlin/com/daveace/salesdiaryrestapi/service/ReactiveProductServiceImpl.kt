@@ -1,13 +1,10 @@
 package com.daveace.salesdiaryrestapi.service
 
-import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.domain.Product
-import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
 import com.daveace.salesdiaryrestapi.repository.ReactiveProductRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import org.springframework.http.HttpStatus
 import javax.validation.constraints.NotNull
 
 @Service
