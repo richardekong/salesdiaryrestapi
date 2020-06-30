@@ -8,10 +8,14 @@ import reactor.core.publisher.Mono
 import javax.validation.constraints.NotNull
 
 @Service
-class ReactiveProductServiceImpl : ReactiveProductService {
+class ReactiveProductServiceImpl() : ReactiveProductService {
+
+    private lateinit var productRepo: ReactiveProductRepository
 
     @Autowired
-    private lateinit var productRepo: ReactiveProductRepository
+    constructor(productRepo: ReactiveProductRepository) {
+        this.productRepo = productRepo
+    }
 
     override fun save(@NotNull product: Product): Mono<Product> {
         return productRepo.save(product)
