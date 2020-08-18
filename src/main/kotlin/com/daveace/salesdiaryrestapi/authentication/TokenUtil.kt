@@ -2,11 +2,14 @@ package com.daveace.salesdiaryrestapi.authentication
 
 import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
+import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 import java.util.*
 
 @Component
@@ -18,12 +21,19 @@ class TokenUtil {
         const val SECRET = "\${jwt.secret}"
     }
 
+    @Autowired
+    private lateinit var userRepo: ReactiveUserRepository
+
     fun getIdFromToken(token: String):String{
         return getAllClaimsFromToken(token)["id"].toString()
     }
 
     fun getEmailFromToken(token: String): String {
         return getAllClaimsFromToken(token).subject
+    }
+
+    fun getUserFromToken(token: String): User {
+        return userRepo.findUserByEmail(getEmailFromToken(token)).toFuture().join()
     }
 
     fun getExpirationDateFromToken(token: String): Date {
