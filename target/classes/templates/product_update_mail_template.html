@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html
+        lang="en"
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body style="margin: auto;width: fit-content;padding: 10%;">
+
+<div class="card"
+     style="border-radius: 15px;
+     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+     font-family: 'Bell MT', monospace;
+     -webkit-border-radius: 15px;
+     -moz-border-radius: 15px;">
+
+    <div class="mail-top"
+         th:with="trader=${data['trader']['name']}"
+         style="background-color: white;
+         border-top-left-radius: inherit;
+         border:1px solid rebeccapurple;
+         border-top-right-radius: inherit;
+         color: rebeccapurple;font-size: smaller;
+         height: 50%;padding: 3%;">
+
+        <span>Dear <b th:text="${trader}"></b>,
+        <b th:text="${data['product']['name']}"></b> was updated on
+            <b th:text="${data['updated_at']}"></b>.
+        </span>
+        <br>
+        <span>Check for more details below</span>
+        <br>
+        <p th:with="product = ${data['product']}">
+            <b>Name:</b>&nbsp;<span th:text="${product.name}">Name</span>
+            <br>
+            <b>Cost:</b>&nbsp;<span th:text="${product.cost}">Cost</span>
+            <br>
+            <b>Stock:</b>&nbsp;<span th:text="${product.stock}">Stock</span>
+            <br>
+            <b>Trader:</b>&nbsp;<span th:text="${trader}">Trader</span>
+            <br>
+        </p>
+    </div>
+    <div class="mail-footer" style="background-color: rebeccapurple;
+         border-bottom-right-radius: inherit;
+         border-bottom-left-radius: inherit;
+         color: white;font-size: smaller;
+         height: 50%;padding: 3%;">
+        <span>Thanks for choosing this service</span>
+        <br>
+        <span>Best Regards,</span>
+        <br>
+        <span>Sales Diary Service Team.</span>
+    </div>
+</div>
+
+</body>
+</html>
