@@ -32,17 +32,17 @@ class TraderChangeListenerImpl : TraderChangeListener {
     }
 
     @Autowired
-    fun initTraderService(traderService: ReactiveTraderService){
+    fun initTraderService(traderService: ReactiveTraderService) {
         this.traderService = traderService
     }
 
     @Autowired
-    fun initProductService(productService: ReactiveProductService){
+    fun initProductService(productService: ReactiveProductService) {
         this.productService = productService
     }
 
     @Autowired
-    fun initCustomerService(customerService: ReactiveCustomerService){
+    fun initCustomerService(customerService: ReactiveCustomerService) {
         this.customerService = customerService
     }
 
@@ -106,6 +106,8 @@ class TraderChangeListenerImpl : TraderChangeListener {
 
                     if (customer.containsKey(NAME) && (customer[NAME] as String).isNotEmpty())
                         customerToUpdate.name = customer[NAME] as String
+                    if (customer.containsKey(PHONE) && (customer[PHONE] as String).isNotEmpty())
+                        customerToUpdate.phone = customer[PHONE] as String
                     if (customer.containsKey(ADDRESS) && (customer[ADDRESS] as String).isNotEmpty())
                         customerToUpdate.address = customer[ADDRESS] as String
                     if (customer.containsKey(COMPANY) && (customer[COMPANY] as String).isNotEmpty())

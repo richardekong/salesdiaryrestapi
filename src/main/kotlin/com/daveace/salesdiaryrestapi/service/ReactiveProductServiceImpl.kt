@@ -13,7 +13,7 @@ class ReactiveProductServiceImpl() : ReactiveProductService {
     private lateinit var productRepo: ReactiveProductRepository
 
     @Autowired
-    constructor(productRepo: ReactiveProductRepository) {
+    constructor(productRepo: ReactiveProductRepository) :this(){
         this.productRepo = productRepo
     }
 

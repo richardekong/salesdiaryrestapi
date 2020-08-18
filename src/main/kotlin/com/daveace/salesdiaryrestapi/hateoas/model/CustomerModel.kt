@@ -11,6 +11,7 @@ class CustomerModel() : RepresentationModel<CustomerModel>() {
     lateinit var id: String
     lateinit var name: String
     lateinit var email: String
+    lateinit var phone:String
     lateinit var traderId: String
     lateinit var company: String
     lateinit var signaturePath: String
@@ -23,6 +24,7 @@ class CustomerModel() : RepresentationModel<CustomerModel>() {
         this.id = customer.id
         this.name = customer.name
         this.email = customer.email
+        this.phone = customer.phone
         this.traderId = customer.traderId
         this.company = customer.company
         this.signaturePath = customer.signaturePath

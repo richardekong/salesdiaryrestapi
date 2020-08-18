@@ -1,7 +1,6 @@
 package com.daveace.salesdiaryrestapi.service
 
 import com.daveace.salesdiaryrestapi.domain.Customer
-import com.daveace.salesdiaryrestapi.domain.Mail
 import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.domain.Trader
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
@@ -11,7 +10,6 @@ import com.daveace.salesdiaryrestapi.repository.ReactiveCustomerRepository
 import com.daveace.salesdiaryrestapi.repository.ReactiveProductRepository
 import com.daveace.salesdiaryrestapi.repository.ReactiveTraderRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -27,10 +25,6 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
     private lateinit var customerService: ReactiveCustomerService
     private lateinit var customerRepo: ReactiveCustomerRepository
     private lateinit var traderChangeListener: TraderChangeListener
-    private lateinit var mailService: MailService
-
-    @Value("\${mailgun.api.email}")
-    private lateinit var appEmail: String
 
     @Autowired
     fun initTraderRepo(traderRepo: ReactiveTraderRepository) {
@@ -60,11 +54,6 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
     @Autowired
     fun initTraderChangeListener(traderChangeListener: TraderChangeListener) {
         this.traderChangeListener = traderChangeListener
-    }
-
-    @Autowired
-    fun initMailService(mailService: MailService) {
-        this.mailService = mailService
     }
 
     override fun save(trader: Trader): Mono<Trader> {
@@ -99,10 +88,8 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
                 .flatMap {
                     traderChangeListener.onAddProduct(it.id, product)
                 }
-                .flatMap { productService.saveIfAbsent(it) }
-                .doOnSuccess {
-                    notifyByEmail(Mail(appEmail, traderEmail, "New Product Addition",
-                            "You have just added ${it.name} to your collection."))
+                .flatMap {
+                    productService.saveIfAbsent(it)
                 }
 
     }
@@ -112,10 +99,8 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
                 .flatMap { trader ->
                     traderChangeListener.onAddCustomer(trader.id, customer)
                 }
-                .flatMap { customerService.saveIfAbsent(customer) }
-                .doOnSuccess {
-                    notifyByEmail(Mail(appEmail, traderEmail, "New Customer Addition",
-                            "You have just registered ${it.name}."))
+                .flatMap {
+                    customerService.saveIfAbsent(customer)
                 }
     }
 
@@ -125,37 +110,26 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
                     Mono.just(trader.products.asSequence()
                             .filter { it.id == productId }
                             .first()
-                    ).switchIfEmpty(Mono.fromRunnable {
-                        throw unAuthorizedAccess()
-                    })
+                    ).switchIfEmpty(flagUnAuthorizedAccess())
                 }
     }
 
     override fun findTraderProducts(traderId: String): Flux<Product> {
-        return productRepo
-                .findAll()
+        return productRepo.findAll()
                 .filter { it.traderId == traderId }
-                .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException(
-                            HttpStatus.NOT_FOUND.reasonPhrase
-                    )
-                })
+                .switchIfEmpty(flagResourceNotFound())
     }
 
     override fun findTraderCustomer(traderId: String, customerEmail: String): Mono<Customer> {
         return customerRepo.findCustomerByEmail(customerEmail)
                 .filter { it.traderId == traderId }
-                .switchIfEmpty(Mono.fromRunnable { throw unAuthorizedAccess() })
+                .switchIfEmpty(flagUnAuthorizedAccess())
     }
 
     override fun findTraderCustomers(traderId: String): Flux<Customer> {
         return customerRepo.findAll()
                 .filter { it.traderId == traderId }
-                .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException(
-                            HttpStatus.NOT_FOUND.reasonPhrase
-                    )
-                })
+                .switchIfEmpty(flagResourceNotFound())
 
     }
 
@@ -163,66 +137,38 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
         return traderChangeListener
                 .onTraderUpdate(traderId, trader)
                 .flatMap { updatedTrader -> save(updatedTrader) }
-                .doOnSuccess {
-                    notifyByEmail(Mail(appEmail, it.email, "Trader Account Update",
-                            "Dear ${it.name}, You have successfully updated your details."))
-                }
     }
 
     override fun <V> updateTraderCustomer(traderId: String, customer: MutableMap<String, V>, customerEmail: String): Mono<Customer> {
-        val trader: Trader = findTraderById(traderId).toFuture().join()
         return traderChangeListener
                 .onUpdateTraderCustomer(traderId, customerEmail, customer)
                 .flatMap { customerRepo.save(it) }
-                .doOnSuccess {
-                    notifyByEmail(Mail(appEmail, trader.email, "Customer Update",
-                            "Dear ${trader.name}, you have successfully updated ${it.name}'s record."))
-                }
     }
 
     override fun <V> updateTraderProduct(traderId: String, product: MutableMap<String, V>, productId: String): Mono<Product> {
-        val trader: Trader = findTraderById(traderId).toFuture().join()
         return traderChangeListener
                 .onUpdateTraderProduct(traderId, product, productId)
-                .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
-                })
+                .switchIfEmpty(flagResourceNotFound())
                 .flatMap { updatedProduct -> productRepo.save(updatedProduct) }
-                .doOnSuccess {
-                    notifyByEmail(Mail(appEmail, trader.email, "Product Update",
-                            "Dear ${trader.name}, you have updated details about ${it.name}."))
-                }
     }
 
     override fun deleteTraderProduct(traderId: String, productId: String): Mono<Void> {
-        val trader: Trader = findTraderById(traderId).toFuture().join()
         return traderChangeListener
                 .onDeleteTraderProduct(traderId, productId)
                 .flatMap { product -> productRepo.delete(product) }
-                .doOnSuccess {
-                    notifyByEmail(Mail(appEmail, trader.email, "Product Deletion",
-                            "Dear ${trader.name}, you have deleted product with id:$productId"))
-                }
     }
 
     override fun deleteTraderCustomer(traderId: String, customerEmail: String): Mono<Void> {
-        val trader: Trader = findTraderById(traderId).toFuture().join()
         return traderChangeListener.onDeleteTraderCustomer(traderId, customerEmail)
                 .flatMap { customerRepo.delete(it) }
-                .doOnSuccess {
-                    notifyByEmail(Mail(appEmail, trader.email, "Customer Deletion",
-                            "Dear ${trader.name}, you have deleted customer with email: $customerEmail"))
-                }
     }
 
-    private fun notifyByEmail(notification: Mail) {
-        mailService.apply { sendText(notification) }
+    private fun <T> flagUnAuthorizedAccess(): Mono<T> {
+        return Mono.fromRunnable { throw AuthenticationException(HttpStatus.UNAUTHORIZED.reasonPhrase) }
     }
 
-    private fun unAuthorizedAccess(): AuthenticationException {
-        return AuthenticationException(HttpStatus.UNAUTHORIZED.reasonPhrase)
+    private fun <T> flagResourceNotFound(): Mono<T> {
+        return Mono.fromRunnable { throw RestException(HttpStatus.NOT_FOUND.reasonPhrase) }
     }
-
-
 }
 

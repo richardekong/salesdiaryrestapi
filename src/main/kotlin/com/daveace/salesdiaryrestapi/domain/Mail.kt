@@ -10,16 +10,22 @@ import javax.validation.constraints.NotBlank
 data class Mail(
         @field:NotBlank(message= RECEIVER_EMAIL_PROMPT)
         @field:Email(message= com.daveace.salesdiaryrestapi.messaging.EMAIL_VAL_MSG)
-        val from:String,
+        var from:String = "",
         @field:NotBlank(message = SENDER_EMAIL_PROMPT)
         @field:Email(message= com.daveace.salesdiaryrestapi.messaging.EMAIL_VAL_MSG)
-        val to:String,
+        var to:String = "",
         @field:NotBlank(message= SUBJECT_PROMPT)
-        val subject:String,
+        var subject:String = "",
         @field:NotBlank(message= CONTENT_PROMPT)
-        val content:String) {
+        var content:String = "") {
 
     @field:Email(message= com.daveace.salesdiaryrestapi.messaging.EMAIL_VAL_MSG)
     var cC:String = ""
+
+    constructor(to:String, subject: String):this(){
+        this.to = to
+        this.subject = subject
+    }
+
 }
 

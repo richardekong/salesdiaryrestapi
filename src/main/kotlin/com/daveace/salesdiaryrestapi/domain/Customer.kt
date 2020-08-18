@@ -16,6 +16,8 @@ data class Customer(
         val id: String = UUID.randomUUID().toString(),
         @field:Email(message = EMAIL_VAL_MSG)
         var email: String = "",
+        @field:NotBlank(message = PHONE_VAL_MSG)
+        var phone: String = "",
         @field:NotNull(message = NAME_VAL_MSG)
         @field:Size(min = MIN_NAME_SIZE, message = MIN_NAME_SIZE_VAL_MSG)
         var name: String = "",
@@ -36,11 +38,12 @@ data class Customer(
     var products: MutableList<Product> = mutableListOf()
 
     constructor() : this(email = "")
-    constructor(email: String, name: String, traderId: String, company: String,
+    constructor(email: String, name: String, phone: String, traderId: String, company: String,
                 address: String, location: MutableList<Double>) : this() {
 
         this.email = email
         this.name = name
+        this.phone = phone
         this.traderId = traderId
         this.company = company
         this.address = address

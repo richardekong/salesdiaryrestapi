@@ -75,12 +75,6 @@ class ReactiveUserServiceImpl : ReactiveUserService {
             }
         }.flatMap {
             repo.save(user).flatMap { saveMoreDetails(it) }
-                    .doOnSuccess {
-                        mailService.apply {
-                            sendText(Mail(appEmail, it.email, "Sale Diary Sign up",
-                                    "welcome to Sales Diary Service"))
-                        }
-                    }
         }
     }
 
@@ -100,7 +94,7 @@ class ReactiveUserServiceImpl : ReactiveUserService {
         return repo.findAll()
     }
 
-    override fun sendPasswordResetLink(email: String, monoLink: Mono<Link>): Mono<String> {
+    override fun generatePasswordResetLink(email: String, monoLink: Mono<Link>): Mono<String> {
         return monoLink.flatMap { passwordResetLink ->
             val passwordResetLinkMail = Mail(appEmail, email, "Password Reset Link", passwordResetLink.href)
             mailService.sendText(passwordResetLinkMail)
@@ -113,15 +107,13 @@ class ReactiveUserServiceImpl : ReactiveUserService {
                 .switchIfEmpty(Mono.fromRunnable {
                     throw RestException("Invalid token!")
                 })
+                .filter { newPassword.isNotEmpty() && newPassword.isNotBlank() }
+                .switchIfEmpty(Mono.fromRunnable{
+                    throw RestException("Provide a password")
+                })
                 .flatMap {
-                    if (newPassword.isNotEmpty())
-                        it.userPassword = encoderService.encode(newPassword)
+                    it.userPassword = encoderService.encode(newPassword)
                     repo.save(it)
-                }.doOnSuccess {
-                    mailService.apply {
-                        sendText(Mail(appEmail, it.email, "Password Reset Operation",
-                                "You have successfully changed your password."))
-                    }
                 }
     }
 
@@ -131,12 +123,9 @@ class ReactiveUserServiceImpl : ReactiveUserService {
         return repo.findUserByEmail(email)
                 .flatMap { user ->
                     repo.delete(user)
-                }.doOnSuccess {
+                }
+                .doOnSuccess {
                     deleteTraderByUserId(userId)
-                    mailService.apply {
-                        sendText(Mail(appEmail, email, "Sales Diary Account deletion",
-                                "your subscription with Sales Diary Service has been terminated!"))
-                    }
                 }
     }
 

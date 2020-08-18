@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import java.net.URI
-import java.time.Duration
+import java.net.URL
 
 @Service
 class MailServiceImpl : MailService {
@@ -68,13 +68,19 @@ class MailServiceImpl : MailService {
     }
 
     private fun send(mail: Mail, contentType: String): Mono<String> {
-        return mailGunWebClient
-                .post()
-                .uri { buildMailGunQueryParams(it, mail, contentType) }
-                .header(AUTHORIZATION, mailGunAuthorization)
-                .retrieve()
-                .bodyToMono(String::class.java)
-                .onErrorMap { RuntimeException("Failed to Send mail.") }
+        return isMailGunReachable()
+                .filter { reachable -> reachable }
+                .flatMap {
+                    mailGunWebClient.post()
+                            .uri { buildMailGunQueryParams(it, mail, contentType) }
+                            .header(AUTHORIZATION, mailGunAuthorization)
+                            .retrieve()
+                            .bodyToMono(String::class.java)
+                }
+                .switchIfEmpty(Mono.just("Mail server is unreachable"))
+                .onErrorMap {
+                    RuntimeException("Failed to Send mail.")
+                }
 
     }
 
@@ -86,6 +92,19 @@ class MailServiceImpl : MailService {
                 .queryParam(SUBJECT, mail.subject)
                 .queryParam(contentType, mail.content)
                 .build()
+    }
+
+    private fun isMailGunReachable(): Mono<Boolean> {
+        return run {
+            try {
+                URL(mailGunBaseUri)
+                        .openConnection()
+                        .connect()
+            } catch (exp: Exception) {
+                return Mono.just(false)
+            }
+            Mono.just(true)
+        }
     }
 
 }

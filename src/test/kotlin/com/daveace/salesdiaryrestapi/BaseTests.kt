@@ -31,7 +31,7 @@ open class BaseTests{
 
     protected fun createTestCustomer(trader: Trader): Customer {
         val location: MutableList<Double> = mutableListOf(12.00, 13.00)
-        return Customer(makeFakeEmail(), "Customer001", trader.id, "company001", "address001", location)
+        return Customer(makeFakeEmail(), "Customer001", "00233473434", trader.id, "company001", "address001", location)
     }
 
     protected fun createTestEvent(trader: Trader, product: Product, customer: Customer): SalesEvent {
