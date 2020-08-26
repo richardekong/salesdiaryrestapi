@@ -35,7 +35,7 @@ data class User(
     override fun getUsername(): String = email
     override fun isCredentialsNonExpired(): Boolean = true
     override fun getPassword() = userPassword
-    override fun isAccountNonExpired(): Boolean = true
+    override fun isAccountNonExpired(): Boolean = true;
     override fun isAccountNonLocked(): Boolean = true
 
 }
