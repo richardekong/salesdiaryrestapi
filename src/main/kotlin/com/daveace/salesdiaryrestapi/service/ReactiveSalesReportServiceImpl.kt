@@ -17,7 +17,7 @@ import kotlin.reflect.full.memberProperties
 @Service
 class ReactiveSalesReportServiceImpl : ReactiveSalesReportService {
 
-    override fun generateReport(salesEvents: Flux<SalesEvent>, fileExtension: String): ByteArrayInputStream {
+    override fun generateReport(salesEvents: Flux<SalesEvent>, fileExtension: String): Mono<ByteArrayInputStream> {
         TODO("Not yet implemented")
     }
 

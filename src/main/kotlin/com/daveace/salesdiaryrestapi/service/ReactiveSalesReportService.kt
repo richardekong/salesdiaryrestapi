@@ -11,7 +11,7 @@ interface ReactiveSalesReportService {
         const val PDF_EXTENSION:String = ".pdf"
     }
 
-    fun generateReport(salesEvents: Flux<SalesEvent>, fileExtension:String=EXCEL_EXTENSION):ByteArrayInputStream
+    fun generateReport(salesEvents: Flux<SalesEvent>, fileExtension:String=EXCEL_EXTENSION):Mono<ByteArrayInputStream>
 
     fun generateReportInExcel(salesEvents:Flux<SalesEvent>): Mono<ByteArrayInputStream>
 
