@@ -25,8 +25,8 @@ import reactor.core.publisher.Mono
 @EnableWebFlux
 class WebfluxConfig : WebFluxConfigurer, WebFilter {
 
-    @Autowired
-    private lateinit var contentNegotiationManager:ContentNegotiationManager
+//    @Autowired
+//    private lateinit var contentNegotiationManager:ContentNegotiationManager
 
     override fun filter(p0: ServerWebExchange, p1: WebFilterChain): Mono<Void> {
 
