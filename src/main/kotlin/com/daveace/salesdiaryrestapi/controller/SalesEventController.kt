@@ -23,13 +23,18 @@ import com.daveace.salesdiaryrestapi.hateoas.assembler.SalesEventModelAssembler
 import com.daveace.salesdiaryrestapi.hateoas.model.SalesEventModel
 import com.daveace.salesdiaryrestapi.hateoas.model.SalesMetricsModel
 import com.daveace.salesdiaryrestapi.service.ReactiveSalesEventService
+import com.daveace.salesdiaryrestapi.service.ReactiveSalesReportService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.InputStreamResource
 import org.springframework.data.domain.PageRequest
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDate
@@ -40,6 +45,7 @@ import javax.validation.Valid
 class SalesEventController : BaseController() {
 
     private lateinit var service: ReactiveSalesEventService
+    private lateinit var reportService: ReactiveSalesReportService
 
     companion object {
         val TODAY: LocalDate = LocalDate.now()
@@ -48,6 +54,11 @@ class SalesEventController : BaseController() {
     @Autowired
     fun initService(service: ReactiveSalesEventService) {
         this.service = service
+    }
+
+    @Autowired
+    fun initReportService(reportService: ReactiveSalesReportService) {
+        this.reportService = reportService
     }
 
     @PostMapping(SALES_DIARY_SALES_EVENTS)
@@ -107,6 +118,19 @@ class SalesEventController : BaseController() {
                                         link, configureSortProperties(by, dir))
                             }
                 }
+    }
+
+    @GetMapping("$SALES_DIARY_SALES_EVENTS/reports.xlsx")
+    fun getReportsInExcel(exchange: ServerWebExchange): Mono<ResponseEntity<InputStreamResource>> {
+        return reportService.generateReportInExcel(service.findSalesEvents()).map {
+            val headerName = "Content-Disposition"
+            val headerValue = "attachment; filename=Sales_Report.xlsx"
+            val headers: HttpHeaders = exchange.request.headers.apply {
+                this.add(headerName, headerValue)
+            }
+            ResponseEntity.ok().headers(headers)
+                    .body(InputStreamResource(it))
+        }
     }
 
     @GetMapping("$SALES_DIARY_SALES_EVENTS/dates")
