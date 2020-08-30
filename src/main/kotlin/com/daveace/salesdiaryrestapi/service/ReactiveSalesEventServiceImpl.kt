@@ -51,7 +51,10 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
                     .filter { it.stock >= salesEvent.quantitySold }
                     .switchIfEmpty(Mono.fromRunnable { throw RestException(PRODUCT_NOT_ENOUGH) })
                     .flatMap {
-                        it.apply { stock -= salesEvent.quantitySold }
+                        it.apply {
+                            stock -= salesEvent.quantitySold
+                            salesEvent.product = this.name
+                        }
                         save(it)
                         traderService.updateTraderProduct(salesEvent.traderId, it.toMap(), it.id)
                     }

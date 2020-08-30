@@ -32,9 +32,9 @@ import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDate
@@ -121,14 +121,12 @@ class SalesEventController : BaseController() {
     }
 
     @GetMapping("$SALES_DIARY_SALES_EVENTS/reports.xlsx")
-    fun getReportsInExcel(exchange: ServerWebExchange): Mono<ResponseEntity<InputStreamResource>> {
+    fun getReportsInExcel(): Mono<ResponseEntity<InputStreamResource>> {
         return reportService.generateReportInExcel(service.findSalesEvents()).map {
-            val headerName = "Content-Disposition"
-            val headerValue = "attachment; filename=Sales_Report.xlsx"
-            val headers: HttpHeaders = exchange.request.headers.apply {
-                this.add(headerName, headerValue)
-            }
-            ResponseEntity.ok().headers(headers)
+            ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Sales_Report.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
                     .body(InputStreamResource(it))
         }
     }

@@ -16,11 +16,11 @@ class SalesMetricsTests : BaseTests(){
     }
     private fun createTestSalesEvents(): MutableList<SalesEvent> {
         return mutableListOf(
-                SalesEvent("TID001", "CID001", "PID001", 10.0, 150.00,
+                SalesEvent("TID001", "CID001", "PID001", "Product001", 10.0, 150.00,
                         155.00, 3.00, mutableListOf(12.934, 31.034)),
-                SalesEvent("TID002", "CID002", "PID002", 12.0, 100.00,
+                SalesEvent("TID002", "CID002", "PID002", "Product002",12.0, 100.00,
                         110.00, 6.00, mutableListOf(12.934, 31.034)),
-                SalesEvent("TID003", "CID002", "PID003", 6.0, 30.00,
+                SalesEvent("TID003", "CID002", "PID003", "Product003", 6.0, 30.00,
                         45.00, 3.00, mutableListOf(12.934, 31.034))
         )
     }

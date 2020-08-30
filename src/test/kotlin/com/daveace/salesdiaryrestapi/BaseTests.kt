@@ -15,13 +15,13 @@ import java.util.*
 @TestPropertySource(locations = ["classpath:application-test.properties"])
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-open class BaseTests{
+open class BaseTests {
 
     protected fun createTestUser(): User {
         return User(makeFakeEmail(), "testPassword123")
     }
 
-    protected fun createTestTrader(user:User): Trader {
+    protected fun createTestTrader(user: User): Trader {
         return Trader(user.id, user.email, "testTrader", "09034734632", "test address")
     }
 
@@ -35,10 +35,10 @@ open class BaseTests{
     }
 
     protected fun createTestEvent(trader: Trader, product: Product, customer: Customer): SalesEvent {
-        return SalesEvent(trader.id, customer.id, product.id, 2.00, 150.00,180.00, 5.00,mutableListOf(12.00,13.00))
+        return SalesEvent(trader.id, customer.id, product.id, product.name, 2.00, 150.00, 180.00, 5.00, mutableListOf(12.00, 13.00))
     }
 
-    private fun makeFakeEmail():String{
+    private fun makeFakeEmail(): String {
         return UUID.randomUUID().toString().substring(0, 3).plus("@mail.com")
     }
 }

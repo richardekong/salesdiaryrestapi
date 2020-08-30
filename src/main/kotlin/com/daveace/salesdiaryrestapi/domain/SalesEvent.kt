@@ -16,6 +16,7 @@ data class SalesEvent(
         var traderId: String = "",
         var productId: String = "",
         var customerId: String = "",
+        var product:String="",
         @field:DecimalMin(value = "0.00")
         var quantitySold: Double = 0.0,
         @field:DecimalMin(value = "0.00")
@@ -28,11 +29,12 @@ data class SalesEvent(
         @field:NotNull
         val location: MutableList<Double> = MutableList(2) { it * 0.0 }):Mappable {
 
-    constructor(traderId: String, customerId: String, productId:String, quantitySold: Double, costPrice: Double,
+    constructor(traderId: String, customerId: String, productId:String, product:String="", quantitySold: Double, costPrice: Double,
                 salesPrice: Double, left: Double, location: MutableList<Double>) : this() {
         this.traderId = traderId
         this.customerId = customerId
         this.productId = productId
+        this.product = product
         this.quantitySold = quantitySold
         this.costPrice = costPrice
         this.salesPrice = salesPrice

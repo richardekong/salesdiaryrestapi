@@ -1,12 +1,9 @@
 package com.daveace.salesdiaryrestapi.hateoas.model
 
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
-import org.springframework.data.geo.Point
 import org.springframework.hateoas.RepresentationModel
 import org.springframework.hateoas.server.core.Relation
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.Date
 
 @Relation(value = "event", collectionRelation = "events")
 class SalesEventModel() : RepresentationModel<SalesEventModel>() {
@@ -15,6 +12,7 @@ class SalesEventModel() : RepresentationModel<SalesEventModel>() {
     lateinit var traderId: String
     lateinit var customerId:String
     lateinit var productId: String
+    lateinit var name:String
     var salesPrice: Double = 0.0
     var quantitySold: Double = 0.0
     var costPrice:Double = 0.0
@@ -27,6 +25,7 @@ class SalesEventModel() : RepresentationModel<SalesEventModel>() {
         this.traderId = event.traderId
         this.customerId = event.customerId
         this.productId = event.productId
+        this.name = event.product
         this.costPrice = event.costPrice
         this.salesPrice = event.salesPrice
         this.quantitySold = event.quantitySold
