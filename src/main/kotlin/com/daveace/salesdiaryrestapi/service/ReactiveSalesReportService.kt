@@ -6,12 +6,6 @@ import reactor.core.publisher.Mono
 import java.io.ByteArrayInputStream
 
 interface ReactiveSalesReportService {
-    companion object{
-        const val EXCEL_EXTENSION:String = ".xls"
-        const val PDF_EXTENSION:String = ".pdf"
-    }
-
-    fun generateReport(salesEvents: Flux<SalesEvent>, fileExtension:String=EXCEL_EXTENSION):Mono<ByteArrayInputStream>
 
     fun generateReportInExcel(salesEvents:Flux<SalesEvent>): Mono<ByteArrayInputStream>
 
