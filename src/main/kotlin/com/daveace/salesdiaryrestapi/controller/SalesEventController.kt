@@ -23,15 +23,12 @@ import com.daveace.salesdiaryrestapi.hateoas.assembler.SalesEventModelAssembler
 import com.daveace.salesdiaryrestapi.hateoas.model.SalesEventModel
 import com.daveace.salesdiaryrestapi.hateoas.model.SalesMetricsModel
 import com.daveace.salesdiaryrestapi.service.ReactiveSalesEventService
-import com.daveace.salesdiaryrestapi.service.ReactiveSalesReportService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.InputStreamResource
 import org.springframework.data.domain.PageRequest
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -43,7 +40,6 @@ import javax.validation.Valid
 class SalesEventController : BaseController() {
 
     private lateinit var service: ReactiveSalesEventService
-    private lateinit var reportService: ReactiveSalesReportService
 
     companion object {
         val TODAY: LocalDate = LocalDate.now()
@@ -54,10 +50,10 @@ class SalesEventController : BaseController() {
         this.service = service
     }
 
-    @Autowired
-    fun initReportService(reportService: ReactiveSalesReportService) {
-        this.reportService = reportService
-    }
+//    @Autowired
+//    fun initReportService(reportService: ReactiveSalesReportService) {
+//        this.reportService = reportService
+//    }
 
     @PostMapping(SALES_DIARY_SALES_EVENTS)
     @ResponseStatus(code = HttpStatus.CREATED)
@@ -116,14 +112,6 @@ class SalesEventController : BaseController() {
                                         link, configureSortProperties(by, dir))
                             }
                 }
-    }
-
-    @GetMapping("$SALES_DIARY_SALES_EVENTS/reports.xlsx")
-    fun getReportsInExcel(): Mono<ResponseEntity<InputStreamResource>> {
-        return reportService.generateReportInExcel(service.findSalesEvents()).map {
-            ResponseEntity.ok().body(InputStreamResource(it))
-        }
-
     }
 
     @GetMapping("$SALES_DIARY_SALES_EVENTS/dates")
@@ -389,8 +377,6 @@ class SalesEventController : BaseController() {
     }
 
     private fun ownsThisEvent(currentUser: User, event: SalesEvent) = currentUser.id == event.traderId
-
-    private fun <T> throwAuthenticationException(): Mono<T> = Mono.fromRunnable { throw AuthenticationException(HttpStatus.UNAUTHORIZED.reasonPhrase) }
 
 
 }

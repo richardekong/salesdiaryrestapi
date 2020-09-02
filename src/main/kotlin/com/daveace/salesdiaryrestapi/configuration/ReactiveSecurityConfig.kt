@@ -24,7 +24,7 @@ class ReactiveSecurityConfig {
     @Autowired
     private lateinit var securityContextRepository: SalesDiarySecurityContextRepository
     private val permittedUrls: Array<String> = arrayOf("$API$SALES_DIARY_AUTH_WILD_CARD",
-            "/api/sales-diary/events/reports.xlsx")
+            "/api/sales-diary/events/report.*")
 
     @Bean
     fun securityWebFilterChain(http:ServerHttpSecurity):SecurityWebFilterChain?{

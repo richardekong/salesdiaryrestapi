@@ -4,12 +4,16 @@ import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.authentication.TokenUtil
 import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
 import com.daveace.salesdiaryrestapi.domain.Mail
+import com.daveace.salesdiaryrestapi.domain.SalesEvent
+import com.daveace.salesdiaryrestapi.domain.User
+import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
 import com.daveace.salesdiaryrestapi.hateoas.link.ReactiveLinkSupport
 import com.daveace.salesdiaryrestapi.page.Paginator
 import com.daveace.salesdiaryrestapi.service.MailService
 import com.daveace.salesdiaryrestapi.service.MailTemplatingService
 import com.sun.istack.internal.logging.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
@@ -71,6 +75,8 @@ class BaseController : ReactiveLinkSupport {
         sortProps.dir = dir
         return sortProps
     }
+
+    protected fun <T> throwAuthenticationException(): Mono<T> = Mono.fromRunnable { throw AuthenticationException(HttpStatus.UNAUTHORIZED.reasonPhrase) }
 
     protected fun prepareAndSendEmailWithHTMLTemplate(
             templateFileName: String = "", mail: Mail,

@@ -23,6 +23,7 @@ class ControllerPath {
         private const val SEMESTER ="/semester"
         private const val YEARLY = "/yearly"
         private const val METRICS = "/metrics"
+        private const val REPORT = "/report"
         private const val WILDCARD = "/**"
 
         const val SALES_DIARY_AUTH_WILD_CARD = "$SALES_DIARY$AUTH$WILDCARD"
@@ -45,6 +46,7 @@ class ControllerPath {
 
         const val SALES_DIARY_SALES_EVENT = "$SALES_DIARY$EVENTS/" //append desired path variable
         const val SALES_DIARY_SALES_EVENTS = "$SALES_DIARY$EVENTS"
+        const val SALES_DIARY_SALES_EVENTS_REPORT = "$SALES_DIARY_SALES_EVENTS$REPORT.*"
         const val SALES_DIARY_DAILY_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$DAILY"
         const val SALES_DIARY_WEEKLY_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$WEEKLY"
         const val SALES_DIARY_MONTHLY_SALES_EVENTS = "$SALES_DIARY_SALES_EVENTS$MONTHLY"
@@ -58,6 +60,7 @@ class ControllerPath {
         const val SALES_DIARY_QUARTERLY_SALES_EVENTS_METRICS = "$SALES_DIARY_QUARTERLY_SALES_EVENTS$METRICS"
         const val SALES_DIARY_SEMESTER_SALES_EVENTS_METRICS = "$SALES_DIARY_SEMESTER_SALES_EVENTS$METRICS"
         const val SALES_DIARY_YEARLY_SALES_EVENTS_METRICS = "$SALES_DIARY_YEARLY_SALES_EVENTS$METRICS"
+
 
     }
 }

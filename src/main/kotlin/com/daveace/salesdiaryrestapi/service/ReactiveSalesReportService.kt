@@ -1,13 +1,15 @@
 package com.daveace.salesdiaryrestapi.service
 
-import com.daveace.salesdiaryrestapi.domain.SalesEvent
+import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.io.ByteArrayInputStream
 
 interface ReactiveSalesReportService {
+    companion object{
+        const val EXCEL_EXTENSION = ".xlsx"
+        const val PDF_EXTENSION = ".pdf"
+    }
 
-    fun generateReportInExcel(salesEvents:Flux<SalesEvent>): Mono<ByteArrayInputStream>
-
-    fun generateReportInPDF(salesEvents: Flux<SalesEvent>)
+    fun<T:Any> generateReport(exchange: ServerWebExchange, data:Flux<T>): Mono<ByteArrayInputStream>
 }
