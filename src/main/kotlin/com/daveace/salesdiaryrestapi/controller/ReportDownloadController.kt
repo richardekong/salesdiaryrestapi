@@ -43,7 +43,7 @@ class ReportDownloadController : BaseController() {
 
     @GetMapping(SALES_DIARY_SALES_EVENTS_REPORT)
     fun generateAllSalesEvents(swe: ServerWebExchange): Mono<ResponseEntity<InputStreamResource>> {
-        return generateSalesEventReport(swe, eventService.findSalesEvents())
+        return generateTheReport(swe, eventService.findSalesEvents())
     }
 
     @GetMapping("$SALES_DIARY_SALES_EVENTS/dates$REPORT.*")

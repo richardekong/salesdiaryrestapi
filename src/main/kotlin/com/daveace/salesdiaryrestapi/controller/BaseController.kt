@@ -90,11 +90,13 @@ class BaseController : ReactiveLinkSupport {
             val modifiedMail: Mail = mailTemplatingService
                     .createMailFromTemplate(exchange)
             println("\ncreated mail: $modifiedMail\n")
-            sendHTML(modifiedMail).apply { subscribe({
-                LOGGER.info("\nHTML Email Delivery:$it\n")
-            },{
-                LOGGER.severe("\nHTML Email Delivery:${it.message}\n")
-            }) }
+            sendHTML(modifiedMail).apply {
+                subscribe({
+                    LOGGER.info("\nHTML Email Delivery:$it\n")
+                }, {
+                    LOGGER.severe("\nHTML Email Delivery:${it.message}\n")
+                })
+            }
         }
     }
 }
