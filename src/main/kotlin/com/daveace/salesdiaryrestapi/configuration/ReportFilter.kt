@@ -17,6 +17,7 @@ class ReportFilter : WebFilter {
         const val PDF_EXTENSION = ReactiveSalesReportService.PDF_EXTENSION
         const val REPORT = "report"
         const val EXCEL_HEADER_VALUE = "attachment;filename=$REPORT$EXCEL_EXTENSION"
+        const val PDF_HEADER_VALUE = "attachment;filename=$REPORT$PDF_EXTENSION"
         const val EXCEL_MEDIA_TYPE = "application/vnd.ms-excel"
     }
 
@@ -34,8 +35,8 @@ class ReportFilter : WebFilter {
 
         }
         if (exchange.request.uri.path.contains(PDF_EXTENSION, true)) {
-            exchange.request.headers.let {
-                it.set(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=$REPORT$PDF_EXTENSION")
+            exchange.response.headers.let {
+                it.set(HttpHeaders.CONTENT_DISPOSITION, PDF_HEADER_VALUE)
                 it.contentType = MediaType.APPLICATION_PDF
             }
         }
