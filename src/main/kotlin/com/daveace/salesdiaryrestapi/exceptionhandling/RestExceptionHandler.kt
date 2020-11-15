@@ -6,7 +6,6 @@ import org.springframework.validation.ObjectError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import reactor.core.publisher.Mono
 
 @ControllerAdvice
 class RestExceptionHandler {
@@ -19,7 +18,7 @@ class RestExceptionHandler {
     }
 
     @ExceptionHandler
-    fun <T>handleException(ex: RestException): ResponseEntity<ErrorResponse<T>>? {
+    fun <T>handleException(ex: NotFoundException): ResponseEntity<ErrorResponse<T>>? {
         val status: HttpStatus = HttpStatus.NOT_FOUND
         val errorResponse: ErrorResponse<T> = ErrorResponse()
         return createErrorResponse(errorResponse, status, ex.message)

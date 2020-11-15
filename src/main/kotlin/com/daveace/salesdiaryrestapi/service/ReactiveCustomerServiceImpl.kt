@@ -2,7 +2,7 @@ package com.daveace.salesdiaryrestapi.service
 
 import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.domain.Customer
-import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
+import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
 import com.daveace.salesdiaryrestapi.repository.ReactiveCustomerRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -45,7 +45,7 @@ class ReactiveCustomerServiceImpl() : ReactiveCustomerService {
                                 customer.traderId == currentUser.id
                             }
                             .switchIfEmpty(Mono.fromRunnable {
-                                throw RestException(HttpStatus.UNAUTHORIZED.reasonPhrase)
+                                throw NotFoundException(HttpStatus.UNAUTHORIZED.reasonPhrase)
                             })
                 }
     }
@@ -58,7 +58,7 @@ class ReactiveCustomerServiceImpl() : ReactiveCustomerService {
                             .subscribeOn(Schedulers.parallel())
                             .filter { customer -> customer.traderId == currentUser.id }
                             .switchIfEmpty(Mono.fromRunnable {
-                                throw RestException(HttpStatus.UNAUTHORIZED.reasonPhrase)
+                                throw NotFoundException(HttpStatus.UNAUTHORIZED.reasonPhrase)
                             })
                 }
     }
@@ -72,7 +72,7 @@ class ReactiveCustomerServiceImpl() : ReactiveCustomerService {
                                 customer.traderId == currentUser.id
                             }
                             .switchIfEmpty(Mono.fromRunnable {
-                                throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
+                                throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase)
                             })
                 }
     }

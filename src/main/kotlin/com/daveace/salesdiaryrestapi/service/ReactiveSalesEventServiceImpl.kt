@@ -4,7 +4,7 @@ import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
 import com.daveace.salesdiaryrestapi.domain.SalesMetrics
 import com.daveace.salesdiaryrestapi.domain.User
-import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
+import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
 import com.daveace.salesdiaryrestapi.repository.ReactiveSalesEventRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -47,9 +47,9 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
         return productService.run {
             findProduct(salesEvent.productId)
                     .filter { it.stock > 0.0 }
-                    .switchIfEmpty(Mono.fromRunnable { throw RestException(PRODUCT_OUT_OF_STOCK) })
+                    .switchIfEmpty(Mono.fromRunnable { throw NotFoundException(PRODUCT_OUT_OF_STOCK) })
                     .filter { it.stock >= salesEvent.quantitySold }
-                    .switchIfEmpty(Mono.fromRunnable { throw RestException(PRODUCT_NOT_ENOUGH) })
+                    .switchIfEmpty(Mono.fromRunnable { throw NotFoundException(PRODUCT_NOT_ENOUGH) })
                     .flatMap {
                         it.apply {
                             stock -= salesEvent.quantitySold
@@ -78,6 +78,9 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
                 .flatMapMany {
                     salesEventRepo.findSalesEventsByDate(it)
                 }
+                .switchIfEmpty(Mono.fromRunnable {
+                    throw NotFoundException()
+                })
     }
 
     override fun findDailySalesEvents(): Flux<SalesEvent> {
@@ -155,7 +158,7 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     }
 
     private fun <T> throwRestException(): Mono<T> {
-        return Mono.fromRunnable { throw RestException(HttpStatus.NOT_FOUND.reasonPhrase) }
+        return Mono.fromRunnable { throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase) }
     }
 
     private fun dateIsBetween(startDate: LocalDate, providedDate: LocalDate, endDate: LocalDate = LocalDate.now()): Boolean {
