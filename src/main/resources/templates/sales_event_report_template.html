@@ -11,13 +11,20 @@
             border:1px solid #663399;
         }
 
-        th, td {
+        th{
             color: white;
+            font-size: large;
         }
 
         tr {
             border:1px solid #663399;
             background-color: white;
+            padding: 15px;
+        }
+
+        tr, td{
+            font-size:medium;
+            padding: 20px;
         }
 
         #header-row th{
@@ -28,30 +35,36 @@
         tr:nth-child(odd) td{
             background-color: #663399;
             color:white;
-            padding:15px;
             text-align:center;
         }
 
         tr:nth-child(even) td{
             background-color: #C690FC;
             color: black;
-            padding: 15px;
             text-align:center;
         }
 
         .topic {
             font-size: 30px;
             font-weight: bold;
+            display: flex;
+            justify-content: center;
         }
 
         .list-items{
             font-size:25px;
         }
+
+        #container{
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            font-family: 'Bell MT',sans-serif;
+            padding: 20px;
+        }
+
     </style>
 </head>
 <body style="margin:auto; width:fit-content;">
-<div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-     font-family: 'Bell MT',sans-serif;">
+<div id = "container">
     <P class="topic">
         Sales Event Report
     </P>
@@ -59,28 +72,28 @@
     <table th:with="data=${report}">
         <tr id="header-row">
             <th>ID</th>
-            <th>TID</th>
-            <th>CID</th>
-            <th>PID</th>
+<!--            <th>TID</th>-->
+<!--            <th>CID</th>-->
+<!--            <th>PID</th>-->
+            <th>Product</th>
             <th>Qty Sold</th>
-            <th>Left</th>
             <th>S.P</th>
             <th>C.P</th>
+            <th>Left</th>
             <th>Date</th>
-            <th>Product</th>
             <th>Location</th>
         </tr>
         <tr th:each="row:${data}">
             <td th:text="${#strings.substring(row['id'], 0, 4)}+' ...'"></td>
-            <td th:text="${#strings.substring(row['traderId'], 0, 4)}+' ...'"></td>
-            <td th:text="${#strings.substring(row['customerId'], 0, 4)}+' ...'"></td>
-            <td th:text="${#strings.substring(row['productId'], 0 , 4)}+' ...'"></td>
+<!--            <td th:text="${#strings.substring(row['traderId'], 0, 4)}+' ...'"></td>-->
+<!--            <td th:text="${#strings.substring(row['customerId'], 0, 4)}+' ...'"></td>-->
+<!--            <td th:text="${#strings.substring(row['productId'], 0 , 4)}+' ...'"></td>-->
+            <td th:text="${row['product']}"></td>
             <td th:text="${row['quantitySold']}"></td>
-            <td th:text="${row['left']}"></td>
             <td th:text="${row['salesPrice']}"></td>
             <td th:text="${row['costPrice']}"></td>
+            <td th:text="${row['left']}"></td>
             <td th:text="${row['date']}"></td>
-            <td th:text="${row['product']}"></td>
             <td th:text="${row['location']}"></td>
         </tr>
     </table>
@@ -89,9 +102,9 @@
     <p class="topic">Key Indicators</p>
     <ul>
         <li class="list-items">ID: Report event Identifier</li>
-        <li class="list-items">TID: Trader Identifier</li>
-        <li class="list-items">CID: Customer Identifier</li>
-        <li class="list-items">PID: Product Identifier</li>
+<!--        <li class="list-items">TID: Trader Identifier</li>-->
+<!--        <li class="list-items">CID: Customer Identifier</li>-->
+<!--        <li class="list-items">PID: Product Identifier</li>-->
         <li class="list-items">Qty Sold: Quantity Sold</li>
         <li class="list-items">C.P: Cost Price</li>
         <li class="list-items">S.P: Sales Price</li>
