@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull
 @Document
 data class SalesEvent(
         @Id
-        val id: String = UUID.randomUUID().toString(),
+        val id: String = SalesDiaryId.generateId(),
         var traderId: String = "",
         var productId: String = "",
         var customerId: String = "",

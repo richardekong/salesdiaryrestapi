@@ -13,7 +13,7 @@ import javax.validation.constraints.Size
 @Document
 data class Customer(
         @Id
-        val id: String = UUID.randomUUID().toString(),
+        val id: String = SalesDiaryId.generateId(),
         @field:Email(message = EMAIL_VAL_MSG)
         var email: String = "",
         @field:NotBlank(message = PHONE_VAL_MSG)
