@@ -4,7 +4,7 @@ import com.daveace.salesdiaryrestapi.authentication.TokenUtil
 import com.daveace.salesdiaryrestapi.domain.Mail
 import com.daveace.salesdiaryrestapi.domain.Trader
 import com.daveace.salesdiaryrestapi.domain.User
-import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
+import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
 import com.daveace.salesdiaryrestapi.repository.ReactiveCustomerRepository
 import com.daveace.salesdiaryrestapi.repository.ReactiveProductRepository
 import com.daveace.salesdiaryrestapi.repository.ReactiveTraderRepository
@@ -26,6 +26,7 @@ class ReactiveUserServiceImpl : ReactiveUserService {
     private lateinit var customerRepo: ReactiveCustomerRepository
     private lateinit var encoderService: SalesDiaryPasswordEncoderService
     private lateinit var tokenUtil: TokenUtil
+    private lateinit var smSService: SMSService
 
     private lateinit var mailService: MailService
 
@@ -67,6 +68,11 @@ class ReactiveUserServiceImpl : ReactiveUserService {
         this.mailService = mailService
     }
 
+    @Autowired
+    fun initSMS2FAService(smSService: SMSService) {
+        this.smSService = smSService
+    }
+
     override fun create(user: User): Mono<User> {
         return repo.existsByEmail(user.email).filter { userExists ->
             when {
@@ -105,11 +111,11 @@ class ReactiveUserServiceImpl : ReactiveUserService {
         val id: String = tokenUtil.getIdFromToken(token)
         return repo.findById(id)
                 .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException("Invalid token!")
+                    throw NotFoundException("Invalid token!")
                 })
                 .filter { newPassword.isNotEmpty() && newPassword.isNotBlank() }
-                .switchIfEmpty(Mono.fromRunnable{
-                    throw RestException("Provide a password")
+                .switchIfEmpty(Mono.fromRunnable {
+                    throw NotFoundException("Provide a password")
                 })
                 .flatMap {
                     it.userPassword = encoderService.encode(newPassword)
@@ -142,7 +148,7 @@ class ReactiveUserServiceImpl : ReactiveUserService {
         trader.email = user.email
         return traderRepo.save(trader)
                 .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException("Could not save user as trader")
+                    throw NotFoundException("Could not save user as trader")
                 })
                 .map { user }
     }
