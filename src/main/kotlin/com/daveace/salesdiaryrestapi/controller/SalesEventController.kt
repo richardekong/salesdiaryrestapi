@@ -32,6 +32,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.security.Principal
 import java.time.LocalDate
 import javax.validation.Valid
 
@@ -50,16 +51,11 @@ class SalesEventController : BaseController() {
         this.service = service
     }
 
-//    @Autowired
-//    fun initReportService(reportService: ReactiveSalesReportService) {
-//        this.reportService = reportService
-//    }
-
     @PostMapping(SALES_DIARY_SALES_EVENTS)
     @ResponseStatus(code = HttpStatus.CREATED)
-    fun saveSalesEvent(@RequestBody @Valid event: SalesEvent): Mono<SalesEventModel> {
+    fun saveSalesEvent(@RequestBody @Valid event: SalesEvent, principal: Principal): Mono<SalesEventModel> {
         return authenticatedUser
-                .getCurrentUser()
+                .getCurrentUser(principal)
                 .filter { ownsThisEvent(it, event) }
                 .switchIfEmpty(throwAuthenticationException())
                 .flatMap {
@@ -68,7 +64,7 @@ class SalesEventController : BaseController() {
                                 respondWithReactiveLink(
                                         SalesEventModel(it),
                                         methodOn(this::class.java)
-                                                .saveSalesEvent(event))
+                                                .saveSalesEvent(event, principal))
                             }
                 }
 
@@ -96,12 +92,13 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
+            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+            principal: Principal
     ): Flux<PagedModel<SalesEventModel>> {
         return authenticatedUser
-                .getCurrentUser()
+                .getCurrentUser(principal)
                 .flatMapMany { currentUser ->
-                    linkTo(methodOn(this.javaClass).findAllSalesEvents(size, page, by, dir))
+                    linkTo(methodOn(this.javaClass).findAllSalesEvents(size, page, by, dir, principal))
                             .withSelfRel()
                             .toMono()
                             .flatMapMany { link ->
@@ -121,11 +118,12 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
             @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
             @RequestParam(name = "date")
-            dateString: String = LocalDate.now().toString()): Flux<PagedModel<SalesEventModel>> {
-        return authenticatedUser.getCurrentUser()
+            dateString: String = LocalDate.now().toString(),
+            principal: Principal): Flux<PagedModel<SalesEventModel>> {
+        return authenticatedUser.getCurrentUser(principal)
                 .flatMapMany { currentUser ->
                     linkTo(methodOn(this.javaClass)
-                            .findAllSalesEventsByDate(size, page, by, dir, dateString))
+                            .findAllSalesEventsByDate(size, page, by, dir, dateString, principal))
                             .withSelfRel()
                             .toMono()
                             .flatMapMany { link ->
@@ -146,12 +144,13 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
             @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
             @RequestParam(name = "from") from: String = TODAY.toString(),
-            @RequestParam(name = "to") to: String = TODAY.toString()): Flux<PagedModel<SalesEventModel>> {
+            @RequestParam(name = "to") to: String = TODAY.toString(),
+            principal: Principal): Flux<PagedModel<SalesEventModel>> {
 
         return authenticatedUser
-                .getCurrentUser()
+                .getCurrentUser(principal)
                 .flatMapMany { currentUser ->
-                    linkTo(methodOn(this.javaClass).findAllSalesEventsByDateRange(size, page, by, dir, from, to))
+                    linkTo(methodOn(this.javaClass).findAllSalesEventsByDateRange(size, page, by, dir, from, to, principal))
                             .withSelfRel()
                             .toMono()
                             .flatMapMany { link ->
@@ -171,12 +170,13 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
+            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+            principal: Principal
     ): Flux<PagedModel<SalesEventModel>> {
         return authenticatedUser
-                .getCurrentUser()
+                .getCurrentUser(principal)
                 .flatMapMany { currentUser ->
-                    linkTo(methodOn(this.javaClass).findDailySalesEvents(size, page, by, dir))
+                    linkTo(methodOn(this.javaClass).findDailySalesEvents(size, page, by, dir, principal))
                             .withSelfRel()
                             .toMono()
                             .flatMapMany { link ->
@@ -194,13 +194,14 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
+            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+            principal: Principal
     ): Flux<PagedModel<SalesEventModel>> {
 
         return authenticatedUser
-                .getCurrentUser()
+                .getCurrentUser(principal)
                 .flatMapMany { currentUser ->
-                    linkTo(methodOn(this.javaClass).findWeeklySalesEvents(size, page, by, dir))
+                    linkTo(methodOn(this.javaClass).findWeeklySalesEvents(size, page, by, dir, principal))
                             .withSelfRel()
                             .toMono()
                             .flatMapMany { link ->
@@ -217,20 +218,22 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
+            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+            principal: Principal
     ): Flux<PagedModel<SalesEventModel>> {
 
-        return authenticatedUser.getCurrentUser().flatMapMany { currentUser ->
-            linkTo(methodOn(this.javaClass).findMonthlySalesEvents(size, page, by, dir))
-                    .withSelfRel().toMono().flatMapMany { link ->
-                        paginator.paginate(SalesEventModelAssembler(),
-                                service.findMonthlySalesEvents()
-                                        .filter { ownsThisEvent(currentUser, it) }
-                                        .switchIfEmpty(throwAuthenticationException()),
-                                PageRequest.of(page, size),
-                                link, configureSortProperties(by, dir))
-                    }
-        }
+        return authenticatedUser.getCurrentUser(principal)
+                .flatMapMany { currentUser ->
+                    linkTo(methodOn(this.javaClass).findMonthlySalesEvents(size, page, by, dir, principal))
+                            .withSelfRel().toMono().flatMapMany { link ->
+                                paginator.paginate(SalesEventModelAssembler(),
+                                        service.findMonthlySalesEvents()
+                                                .filter { ownsThisEvent(currentUser, it) }
+                                                .switchIfEmpty(throwAuthenticationException()),
+                                        PageRequest.of(page, size),
+                                        link, configureSortProperties(by, dir))
+                            }
+                }
     }
 
     @GetMapping(SALES_DIARY_QUARTERLY_SALES_EVENTS)
@@ -238,19 +241,21 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
+            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+            principal: Principal
     ): Flux<PagedModel<SalesEventModel>> {
 
-        return authenticatedUser.getCurrentUser().flatMapMany { currentUser ->
-            linkTo(methodOn(this.javaClass).findQuarterlySalesEvents(size, page, by, dir))
-                    .withSelfRel().toMono().flatMapMany { link ->
-                        paginator.paginate(SalesEventModelAssembler(),
-                                service.findQuarterlySalesEvents()
-                                        .filter { ownsThisEvent(currentUser, it) }
-                                        .switchIfEmpty(throwAuthenticationException()),
-                                PageRequest.of(page, size), link, configureSortProperties(by, dir))
-                    }
-        }
+        return authenticatedUser.getCurrentUser(principal)
+                .flatMapMany { currentUser ->
+                    linkTo(methodOn(this.javaClass).findQuarterlySalesEvents(size, page, by, dir, principal))
+                            .withSelfRel().toMono().flatMapMany { link ->
+                                paginator.paginate(SalesEventModelAssembler(),
+                                        service.findQuarterlySalesEvents()
+                                                .filter { ownsThisEvent(currentUser, it) }
+                                                .switchIfEmpty(throwAuthenticationException()),
+                                        PageRequest.of(page, size), link, configureSortProperties(by, dir))
+                            }
+                }
     }
 
     @GetMapping(SALES_DIARY_SEMESTER_SALES_EVENTS)
@@ -258,15 +263,17 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
+            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+            principal: Principal
     ): Flux<PagedModel<SalesEventModel>> {
-        return authenticatedUser.getCurrentUser().flatMapMany { currentUser ->
-            linkTo(methodOn(this.javaClass).findSemesterSalesEvents(size, page, by, dir))
-                    .withSelfRel().toMono().flatMapMany { link ->
-                        paginator.paginate(SalesEventModelAssembler(), service.findSemesterSalesEvents().filter { ownsThisEvent(currentUser, it) }
-                                .switchIfEmpty(throwAuthenticationException()), PageRequest.of(page, size), link, configureSortProperties(by, dir))
-                    }
-        }
+        return authenticatedUser.getCurrentUser(principal)
+                .flatMapMany { currentUser ->
+                    linkTo(methodOn(this.javaClass).findSemesterSalesEvents(size, page, by, dir, principal))
+                            .withSelfRel().toMono().flatMapMany { link ->
+                                paginator.paginate(SalesEventModelAssembler(), service.findSemesterSalesEvents().filter { ownsThisEvent(currentUser, it) }
+                                        .switchIfEmpty(throwAuthenticationException()), PageRequest.of(page, size), link, configureSortProperties(by, dir))
+                            }
+                }
     }
 
     @GetMapping(SALES_DIARY_YEARLY_SALES_EVENTS)
@@ -274,91 +281,93 @@ class SalesEventController : BaseController() {
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
+            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+            principal: Principal
     ): Flux<PagedModel<SalesEventModel>> {
 
-        return authenticatedUser.getCurrentUser().flatMapMany { currentUser ->
-            linkTo(methodOn(this.javaClass).findYearlySalesEvents(size, page, by, dir))
-                    .withSelfRel().toMono().flatMapMany { link ->
-                        paginator.paginate(SalesEventModelAssembler(), service.findYearlySalesEvents().filter { ownsThisEvent(currentUser, it) }
-                                .switchIfEmpty(throwAuthenticationException()), PageRequest.of(page, size), link, configureSortProperties(by, dir))
-                    }
-        }
+        return authenticatedUser.getCurrentUser(principal)
+                .flatMapMany { currentUser ->
+                    linkTo(methodOn(this.javaClass).findYearlySalesEvents(size, page, by, dir, principal))
+                            .withSelfRel().toMono().flatMapMany { link ->
+                                paginator.paginate(SalesEventModelAssembler(), service.findYearlySalesEvents().filter { ownsThisEvent(currentUser, it) }
+                                        .switchIfEmpty(throwAuthenticationException()), PageRequest.of(page, size), link, configureSortProperties(by, dir))
+                            }
+                }
     }
 
     @GetMapping(SALES_DIARY_DAILY_SALES_EVENTS_METRICS)
-    fun findDailySalesEventsMetrics(): Mono<SalesMetricsModel> {
+    fun findDailySalesEventsMetrics(principal: Principal): Mono<SalesMetricsModel> {
 
-        return authenticatedUser.getCurrentUser().flatMap { currentUser ->
+        return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
             service.findDailySalesEventsMetrics(currentUser).flatMap {
                 respondWithReactiveLink(SalesMetricsModel(it),
-                        methodOn(this.javaClass).findDailySalesEventsMetrics())
+                        methodOn(this.javaClass).findDailySalesEventsMetrics(principal))
             }
         }
     }
 
     @GetMapping(SALES_DIARY_WEEKLY_SALES_EVENTS_METRICS)
-    fun findWeeklySalesEventsMetrics(): Mono<SalesMetricsModel> {
+    fun findWeeklySalesEventsMetrics(principal: Principal): Mono<SalesMetricsModel> {
 
-        return authenticatedUser.getCurrentUser().flatMap { currentUser ->
+        return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
             service.findWeeklySalesEventsMetrics(currentUser).flatMap {
                 respondWithReactiveLink(SalesMetricsModel(it),
-                        methodOn(this.javaClass).findDailySalesEventsMetrics())
+                        methodOn(this.javaClass).findDailySalesEventsMetrics(principal))
             }
         }
     }
 
     @GetMapping(SALES_DIARY_MONTHLY_SALES_EVENTS_METRICS)
-    fun findMonthlySalesEventsMetrics(): Mono<SalesMetricsModel> {
+    fun findMonthlySalesEventsMetrics(principal: Principal): Mono<SalesMetricsModel> {
 
         return authenticatedUser.getCurrentUser().flatMap { currentUser ->
             service.findMonthlySalesEventsMetrics(currentUser).flatMap {
                 respondWithReactiveLink(SalesMetricsModel(it),
-                        methodOn(this.javaClass).findMonthlySalesEventsMetrics())
+                        methodOn(this.javaClass).findMonthlySalesEventsMetrics(principal))
             }
         }
     }
 
     @GetMapping(SALES_DIARY_QUARTERLY_SALES_EVENTS_METRICS)
-    fun findQuarterlySalesEventsMetrics(): Mono<SalesMetricsModel> {
+    fun findQuarterlySalesEventsMetrics(principal: Principal): Mono<SalesMetricsModel> {
 
-        return authenticatedUser.getCurrentUser().flatMap { currentUser ->
+        return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
             service.findQuarterlySalesEventsMetrics(currentUser).flatMap {
                 respondWithReactiveLink(SalesMetricsModel(it),
-                        methodOn(this.javaClass).findQuarterlySalesEventsMetrics())
+                        methodOn(this.javaClass).findQuarterlySalesEventsMetrics(principal))
             }
         }
     }
 
     @GetMapping(SALES_DIARY_SEMESTER_SALES_EVENTS_METRICS)
-    fun findSemesterSalesEventsMetrics(): Mono<SalesMetricsModel> {
+    fun findSemesterSalesEventsMetrics(principal: Principal): Mono<SalesMetricsModel> {
 
-        return authenticatedUser.getCurrentUser().flatMap { currentUser ->
+        return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
             service.findSemesterSalesEventsMetrics(currentUser).flatMap {
                 respondWithReactiveLink(SalesMetricsModel(it),
-                        methodOn(this.javaClass).findSemesterSalesEventsMetrics())
+                        methodOn(this.javaClass).findSemesterSalesEventsMetrics(principal))
             }
         }
     }
 
     @GetMapping(SALES_DIARY_YEARLY_SALES_EVENTS_METRICS)
-    fun findYearlySalesEventsMetrics(): Mono<SalesMetricsModel> {
+    fun findYearlySalesEventsMetrics(principal: Principal): Mono<SalesMetricsModel> {
 
-        return authenticatedUser.getCurrentUser().flatMap { currentUser ->
+        return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
             service.findYearlySalesEventsMetrics(currentUser).flatMap {
                 respondWithReactiveLink(SalesMetricsModel(it),
-                        methodOn(this.javaClass).findYearlySalesEventsMetrics())
+                        methodOn(this.javaClass).findYearlySalesEventsMetrics(principal))
             }
         }
     }
 
     @GetMapping("$SALES_DIARY_SALES_EVENTS_METRICS/{dateString}")
-    fun findSalesEventsMetricsByDate(@PathVariable dateString: String): Mono<SalesMetricsModel> {
+    fun findSalesEventsMetricsByDate(@PathVariable dateString: String, principal: Principal): Mono<SalesMetricsModel> {
 
-        return authenticatedUser.getCurrentUser().flatMap { currentUser ->
+        return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
             service.findSalesEventsMetrics(dateString, currentUser).flatMap {
                 respondWithReactiveLink(SalesMetricsModel(it),
-                        methodOn(this.javaClass).findSalesEventsMetricsByDate(dateString))
+                        methodOn(this.javaClass).findSalesEventsMetricsByDate(dateString, principal))
             }
         }
     }
@@ -366,18 +375,18 @@ class SalesEventController : BaseController() {
     @GetMapping("$SALES_DIARY_SALES_EVENTS_METRICS/period")
     fun findSalesEventsMetricsByDateRange(
             @RequestParam(name = "from") from: String = TODAY.toString(),
-            @RequestParam(name = "to") to: String = TODAY.toString()): Mono<SalesMetricsModel> {
+            @RequestParam(name = "to") to: String = TODAY.toString(),
+            principal: Principal): Mono<SalesMetricsModel> {
 
-        return authenticatedUser.getCurrentUser().flatMap { currentUser ->
+        return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
             service.findSalesEventsMetrics(from, to, currentUser).flatMap {
                 respondWithReactiveLink(SalesMetricsModel(it),
-                        methodOn(this.javaClass).findSalesEventsMetricsByDateRange(to, from))
+                        methodOn(this.javaClass).findSalesEventsMetricsByDateRange(to, from, principal))
             }
         }
     }
 
     private fun ownsThisEvent(currentUser: User, event: SalesEvent) = currentUser.id == event.traderId
-
 
 }
 

@@ -7,7 +7,7 @@ import com.daveace.salesdiaryrestapi.domain.Customer
 import com.daveace.salesdiaryrestapi.domain.Mail
 import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.domain.Trader
-import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
+import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
 import com.daveace.salesdiaryrestapi.hateoas.assembler.CustomerModelAssembler
 import com.daveace.salesdiaryrestapi.hateoas.assembler.ProductModelAssembler
 import com.daveace.salesdiaryrestapi.hateoas.assembler.TraderModelAssembler
@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.security.Principal
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.validation.Valid
@@ -54,7 +55,7 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
     constructor(
             traderService: ReactiveTraderService,
             productService: ReactiveProductService,
-            customerService:ReactiveCustomerService
+            customerService: ReactiveCustomerService
     ) : this() {
         this.traderService = traderService
         this.productService = productService
@@ -94,15 +95,17 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
 
     @PostMapping("$SALES_DIARY_TRADER{email}/products")
     fun addProduct(@PathVariable email: String, @RequestBody @Valid product: Product,
+                   principal: Principal,
                    exchange: ServerWebExchange): Mono<ProductModel> {
+        println("\n\n\n${principal.name}\n\n\n")
         return authenticatedUser
-                .isCurrentUserAuthorizedByEmail(email)
+                .isCurrentUserAuthorizedByEmail(email, principal)
                 .flatMap {
                     traderService.addProduct(email, product)
                             .flatMap {
                                 respondWithReactiveLink(ProductModel(it),
                                         methodOn(this.javaClass)
-                                                .addProduct(email, product, exchange))
+                                                .addProduct(email, product, principal, exchange))
                             }.doOnSuccess {
                                 val addedAt: String = LocalDateTime.now()
                                         .format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN))
@@ -122,15 +125,19 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
     }
 
     @PostMapping("$SALES_DIARY_TRADER{email}/customers")
-    fun addCustomer(@PathVariable email: String, @RequestBody @Valid customer: Customer, exchange: ServerWebExchange): Mono<CustomerModel> {
+    fun addCustomer(
+            @PathVariable email: String,
+            @RequestBody @Valid customer: Customer,
+            principal: Principal,
+            exchange: ServerWebExchange): Mono<CustomerModel> {
         return authenticatedUser
-                .isCurrentUserAuthorizedByEmail(email)
+                .isCurrentUserAuthorizedByEmail(email, principal)
                 .flatMap {
                     traderService.addCustomer(email, customer)
                             .flatMap { addedCustomer ->
                                 respondWithReactiveLink(CustomerModel(addedCustomer),
                                         methodOn(this.javaClass)
-                                                .addCustomer(email, customer, exchange))
+                                                .addCustomer(email, customer, principal, exchange))
                             }.doOnSuccess {
                                 val dateOfAddition: String = LocalDateTime.now()
                                         .format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN))
@@ -150,15 +157,19 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
     }
 
     @GetMapping("$SALES_DIARY_TRADER{traderId}/products/{productId}")
-    fun findTraderProduct(@PathVariable traderId: String, @PathVariable productId: String, exchange: ServerWebExchange): Mono<ProductModel> {
+    fun findTraderProduct(
+            @PathVariable traderId: String,
+            @PathVariable productId: String,
+            principal: Principal,
+            exchange: ServerWebExchange): Mono<ProductModel> {
         return authenticatedUser
-                .isCurrentUserAuthorizedById(traderId)
+                .isCurrentUserAuthorizedById(traderId, principal)
                 .flatMap {
                     traderService.findTraderProduct(traderId, productId)
                             .flatMap { product ->
                                 respondWithReactiveLink(ProductModel(product),
                                         methodOn(this.javaClass)
-                                                .findTraderProduct(traderId, productId, exchange))
+                                                .findTraderProduct(traderId, productId, principal, exchange))
                             }
                 }
     }
@@ -169,13 +180,14 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
             @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
-            @PathVariable traderId: String): Flux<PagedModel<ProductModel>> {
+            @PathVariable traderId: String,
+            principal: Principal): Flux<PagedModel<ProductModel>> {
 
         return authenticatedUser
-                .isCurrentUserAuthorizedById(traderId)
+                .isCurrentUserAuthorizedById(traderId, principal)
                 .flatMapMany {
                     linkTo(methodOn(this.javaClass)
-                            .findTraderProducts(size, page, by, dir, traderId))
+                            .findTraderProducts(size, page, by, dir, traderId, principal))
                             .withSelfRel()
                             .toMono()
                             .flatMapMany { link ->
@@ -189,15 +201,18 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
     }
 
     @GetMapping("$SALES_DIARY_TRADER{id}/customers/{email}")
-    fun findTraderCustomer(@PathVariable id: String, @PathVariable email: String): Mono<CustomerModel> {
+    fun findTraderCustomer(
+            @PathVariable id: String,
+            @PathVariable email: String,
+            principal: Principal): Mono<CustomerModel> {
         return authenticatedUser
-                .isCurrentUserAuthorizedById(id)
+                .isCurrentUserAuthorizedById(id, principal)
                 .flatMap {
                     traderService.findTraderCustomer(id, email)
                             .flatMap {
                                 respondWithReactiveLink(CustomerModel(it),
                                         methodOn(this.javaClass)
-                                                .findTraderCustomer(id, email))
+                                                .findTraderCustomer(id, email, principal))
                             }
                 }
 
@@ -209,12 +224,13 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
             @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
             @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
-            @PathVariable id: String): Flux<PagedModel<CustomerModel>> {
+            @PathVariable id: String,
+            principal: Principal): Flux<PagedModel<CustomerModel>> {
 
-        return authenticatedUser.isCurrentUserAuthorizedById(id)
+        return authenticatedUser.isCurrentUserAuthorizedById(id, principal)
                 .flatMapMany {
                     linkTo(methodOn(this.javaClass)
-                            .findTraderCustomers(size, page, by, dir, id))
+                            .findTraderCustomers(size, page, by, dir, id, principal))
                             .withSelfRel()
                             .toMono()
                             .flatMapMany { link ->
@@ -227,7 +243,7 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
     }
 
     @PatchMapping(SALES_DIARY_TRADERS)
-    fun <V> updateTrader(@RequestBody trader: MutableMap<String, V>, exchange: ServerWebExchange): Mono<TraderModel> {
+    fun <V> updateTrader(@RequestBody trader: MutableMap<String, V>, principal: Principal, exchange: ServerWebExchange): Mono<TraderModel> {
         return authenticatedUser
                 .getCurrentUser()
                 .flatMap { currentUser ->
@@ -235,7 +251,7 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
                             .flatMap { updatedTrader ->
                                 respondWithReactiveLink(TraderModel(updatedTrader),
                                         methodOn(this.javaClass)
-                                                .updateTrader(trader, exchange))
+                                                .updateTrader(trader, principal, exchange))
                             }.doOnSuccess {
                                 val updatedAt = LocalDateTime.now()
                                         .format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN))
@@ -257,15 +273,16 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
             @PathVariable id: String,
             @PathVariable cEmail: String,
             @RequestBody customer: MutableMap<String, V>,
+            principal: Principal,
             exchange: ServerWebExchange): Mono<CustomerModel> {
         return authenticatedUser
-                .isCurrentUserAuthorizedById(id)
+                .isCurrentUserAuthorizedById(id, principal)
                 .flatMap { traderService.findTraderCustomer(id, cEmail) }
                 .flatMap {
                     traderService.updateTraderCustomer(id, customer, cEmail)
                             .flatMap {
                                 respondWithReactiveLink(CustomerModel(it), methodOn(this.javaClass)
-                                        .updateTraderCustomer(id, cEmail, customer, exchange))
+                                        .updateTraderCustomer(id, cEmail, customer,principal, exchange))
                             }
                 }.doOnSuccess {
                     traderService.findTraderById(id).subscribe { trader ->
@@ -291,15 +308,16 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
             @PathVariable tId: String,
             @PathVariable pId: String,
             @RequestBody product: MutableMap<String, V>,
+            principal: Principal,
             exchange: ServerWebExchange): Mono<ProductModel> {
         return authenticatedUser
-                .isCurrentUserAuthorizedById(tId)
+                .isCurrentUserAuthorizedById(tId, principal)
                 .flatMap { traderService.findTraderProduct(tId, pId) }
                 .flatMap {
                     traderService.updateTraderProduct(tId, product, pId)
                             .flatMap {
                                 respondWithReactiveLink(ProductModel(it), methodOn(this.javaClass)
-                                        .updateTraderProduct(tId, pId, product, exchange))
+                                        .updateTraderProduct(tId, pId, product,principal, exchange))
                             }.doOnSuccess {
                                 traderService.findTraderById(tId).subscribe { trader ->
                                     val updatedAt = LocalDateTime.now().format(
@@ -322,17 +340,21 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
 
     @DeleteMapping("$SALES_DIARY_TRADER{tId}/products/{pId}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    fun deleteTraderProduct(@PathVariable tId: String, @PathVariable pId: String, exchange: ServerWebExchange): Mono<Void> {
+    fun deleteTraderProduct(
+            @PathVariable tId: String,
+            @PathVariable pId: String,
+            principal: Principal,
+            exchange: ServerWebExchange): Mono<Void> {
         val deletedProduct: Product = productService.findProduct(pId)
                 .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
+                    throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase)
                 }).toFuture().join()
         val trader: Trader = traderService.findTraderById(tId)
                 .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
+                    throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase)
                 }).toFuture().join()
         return authenticatedUser
-                .isCurrentUserAuthorizedById(tId)
+                .isCurrentUserAuthorizedById(tId, principal)
                 .flatMap { traderService.deleteTraderProduct(tId, pId) }
                 .doOnSuccess {
                     val deletedAt = LocalDateTime.now()
@@ -353,17 +375,21 @@ class TraderController() : BaseController(), ReactiveLinkSupport {
 
     @DeleteMapping("$SALES_DIARY_TRADER{tId}/customers/{cEmail}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    fun deleteTraderCustomer(@PathVariable tId: String, @PathVariable cEmail: String, exchange: ServerWebExchange): Mono<Void> {
+    fun deleteTraderCustomer(
+            @PathVariable tId: String,
+            @PathVariable cEmail: String,
+            principal: Principal,
+            exchange: ServerWebExchange): Mono<Void> {
         val trader: Trader = traderService.findTraderById(tId)
                 .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
+                    throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase)
                 }).toFuture().join()
         val deletedCustomer: Customer = customerService.findCustomerByEmail(cEmail)
                 .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
+                    throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase)
                 }).toFuture().join()
         return authenticatedUser
-                .isCurrentUserAuthorizedById(tId)
+                .isCurrentUserAuthorizedById(tId, principal)
                 .flatMap { traderService.deleteTraderCustomer(tId, cEmail) }
                 .doOnSuccess {
                     val deleteAt = LocalDateTime.now()

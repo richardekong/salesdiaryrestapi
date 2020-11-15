@@ -11,13 +11,14 @@ import com.daveace.salesdiaryrestapi.domain.Mail
 import com.daveace.salesdiaryrestapi.domain.PASSWORD_SIZE_VAL_MSG
 import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
-import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
+import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
 import com.daveace.salesdiaryrestapi.hateoas.assembler.UserModelAssembler
 import com.daveace.salesdiaryrestapi.hateoas.model.TokenModel
 import com.daveace.salesdiaryrestapi.hateoas.model.UserModel
 import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
 import com.daveace.salesdiaryrestapi.service.ReactiveUserService
 import com.daveace.salesdiaryrestapi.service.SalesDiaryPasswordEncoderService
+import com.daveace.salesdiaryrestapi.service.TwoFAService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.hateoas.Link
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.security.Principal
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.validation.Valid
@@ -36,10 +38,12 @@ import javax.validation.constraints.Size
 
 @RestController
 @RequestMapping(API)
-class UserController() : BaseController() {
+class UserController : BaseController() {
 
     private lateinit var userService: ReactiveUserService
     private lateinit var encoderService: SalesDiaryPasswordEncoderService
+    private lateinit var twoFAService: TwoFAService
+
 
     companion object {
         const val WRONG_CREDENTIAL = "Wrong email or password!"
@@ -55,9 +59,18 @@ class UserController() : BaseController() {
     }
 
     @Autowired
-    constructor(userService: ReactiveUserService, encoderService: SalesDiaryPasswordEncoderService) : this() {
+    fun initUserService(userService: ReactiveUserService) {
         this.userService = userService
+    }
+
+    @Autowired
+    fun initEncoderService(encoderService: SalesDiaryPasswordEncoderService) {
         this.encoderService = encoderService
+    }
+
+    @Autowired
+    fun initTwoFAService(twoFAService: TwoFAService) {
+        this.twoFAService = twoFAService
     }
 
     @PostMapping(SALES_DIARY_AUTH_SIGN_UP_USERS, produces = ["application/json"])
@@ -83,9 +96,12 @@ class UserController() : BaseController() {
     }
 
     @PostMapping(SALES_DIARY_AUTH_LOGIN_USERS)
-    fun logInUser(@RequestBody credentials: Map<String, String>, exchange: ServerWebExchange): Mono<TokenModel> {
+    fun logInUser(@RequestBody credentials: Map<String, String>,
+                  @RequestHeader("code", defaultValue = "") code: String = "",
+                  exchange: ServerWebExchange): Mono<TokenModel> {
         val email: String? = credentials["email"]
         val password: String? = credentials["password"]
+
         return userService.findUserByEmail(email!!)
                 .switchIfEmpty(Mono.fromRunnable {
                     throw AuthenticationException(
@@ -95,6 +111,7 @@ class UserController() : BaseController() {
                 .switchIfEmpty(Mono.fromRunnable {
                     throw RuntimeException(WRONG_CREDENTIAL)
                 })
+                .flatMap { twoFAService.verify2FACode(email, code) }
                 .map { tokenUtil.generateToken(it) }
                 .doOnSuccess {
                     val subject = "Log In Confirmation"
@@ -119,7 +136,7 @@ class UserController() : BaseController() {
                     respondWithReactiveLink(
                             TokenModel(it),
                             methodOn(this::class.java)
-                                    .logInUser(credentials, exchange)
+                                    .logInUser(credentials, code, exchange)
                     )
                 }
     }
@@ -135,7 +152,7 @@ class UserController() : BaseController() {
                     )
                 }
                 .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException(HttpStatus.NOT_FOUND.reasonPhrase)
+                    throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase)
                 })
     }
 
@@ -166,7 +183,7 @@ class UserController() : BaseController() {
     fun requestPasswordResetLink(@PathVariable email: String, exchange: ServerWebExchange): Mono<String> {
         return userService.findUserByEmail(email)
                 .switchIfEmpty(Mono.fromRunnable {
-                    throw RestException("Wrong email address!")
+                    throw NotFoundException("Wrong email address!")
                 }).flatMap {
                     val token: String = tokenUtil.generateToken(it, validity = 60000L)
                     linkTo(methodOn(this.javaClass)
@@ -217,8 +234,8 @@ class UserController() : BaseController() {
 
     @DeleteMapping("$SALES_DIARY_USER{email}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    fun deleteUser(@PathVariable email: String, exchange: ServerWebExchange): Mono<Void> {
-        return authenticatedUser.isCurrentUserAuthorizedByEmail(email)
+    fun deleteUser(@PathVariable email: String, principal: Principal, exchange: ServerWebExchange): Mono<Void> {
+        return authenticatedUser.isCurrentUserAuthorizedByEmail(email, principal)
                 .flatMap {
                     userService.deleteUserByEmail(email)
                             .doOnSuccess {
