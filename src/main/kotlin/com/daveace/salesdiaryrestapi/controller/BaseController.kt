@@ -9,6 +9,7 @@ import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
 import com.daveace.salesdiaryrestapi.hateoas.link.ReactiveLinkSupport
 import com.daveace.salesdiaryrestapi.page.Paginator
+import com.daveace.salesdiaryrestapi.service.GmailService
 import com.daveace.salesdiaryrestapi.service.MailService
 import com.daveace.salesdiaryrestapi.service.MailTemplatingService
 import com.sun.istack.internal.logging.Logger
@@ -26,6 +27,7 @@ class BaseController : ReactiveLinkSupport {
     lateinit var tokenUtil: TokenUtil
     lateinit var authenticatedUser: AuthenticatedUser
     lateinit var mailService: MailService
+    lateinit var gmailService: GmailService
     lateinit var mailTemplatingService: MailTemplatingService
 
     companion object {
@@ -66,6 +68,11 @@ class BaseController : ReactiveLinkSupport {
     }
 
     @Autowired
+    fun initGmailService(gmailService: GmailService){
+        this.gmailService = gmailService
+    }
+
+    @Autowired
     fun initMailTemplatingService(mailTemplatingService: MailTemplatingService) {
         this.mailTemplatingService = mailTemplatingService
     }
@@ -86,7 +93,7 @@ class BaseController : ReactiveLinkSupport {
         exchange.attributes[TEMPLATE_FILE_NAME] = templateFileName
         exchange.attributes[RECIPIENT_DATA] = recipientData
         exchange.attributes[MAIL] = mail
-        return mailService.run {
+        return gmailService.run {
             val modifiedMail: Mail = mailTemplatingService
                     .createMailFromTemplate(exchange)
             println("\ncreated mail: $modifiedMail\n")
