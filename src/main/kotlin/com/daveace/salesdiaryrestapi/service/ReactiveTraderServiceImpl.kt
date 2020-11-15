@@ -4,7 +4,7 @@ import com.daveace.salesdiaryrestapi.domain.Customer
 import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.domain.Trader
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
-import com.daveace.salesdiaryrestapi.exceptionhandling.RestException
+import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
 import com.daveace.salesdiaryrestapi.listeners.TraderChangeListener
 import com.daveace.salesdiaryrestapi.repository.ReactiveCustomerRepository
 import com.daveace.salesdiaryrestapi.repository.ReactiveProductRepository
@@ -65,7 +65,7 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
         return traderRepo.existsTraderByEmail(email)
                 .subscribeOn(Schedulers.parallel())
                 .filter { traderExists ->
-                    if (traderExists) throw RestException(
+                    if (traderExists) throw NotFoundException(
                             "Trader with $email exists!")
                     else traderExists.not()
                 }.flatMap { traderRepo.save(trader) }
@@ -168,7 +168,7 @@ class ReactiveTraderServiceImpl : ReactiveTraderService {
     }
 
     private fun <T> flagResourceNotFound(): Mono<T> {
-        return Mono.fromRunnable { throw RestException(HttpStatus.NOT_FOUND.reasonPhrase) }
+        return Mono.fromRunnable { throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase) }
     }
 }
 

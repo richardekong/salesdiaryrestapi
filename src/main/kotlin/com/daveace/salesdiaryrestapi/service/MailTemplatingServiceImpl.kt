@@ -13,7 +13,7 @@ import org.thymeleaf.spring5.context.webflux.SpringWebFluxContext
 import javax.validation.constraints.NotNull
 
 @Service
-class MailTemplatingServiceImpl:MailTemplatingService {
+class MailTemplatingServiceImpl : MailTemplatingService {
 
     private lateinit var templateEngine: SpringWebFluxTemplateEngine
 
@@ -26,7 +26,7 @@ class MailTemplatingServiceImpl:MailTemplatingService {
         this.templateEngine = templateEngine
     }
 
-    override fun createMailFromTemplate(@NotNull exchange: ServerWebExchange):Mail {
+    override fun createMailFromTemplate(@NotNull exchange: ServerWebExchange): Mail {
         val context = SpringWebFluxContext(exchange, exchange.localeContext.locale)
         context.setVariable(RECIPIENT_DATA, exchange.getAttribute(RECIPIENT_DATA))
         val content: String = templateEngine.process((exchange.getAttribute<String?>(TEMPLATE_FILE_NAME)), context)
@@ -34,6 +34,15 @@ class MailTemplatingServiceImpl:MailTemplatingService {
             this.from = appEmail
             this.content = content
         }
+    }
+
+    override fun createMailFromTemplate(data: MutableMap<String, Any>, templateFileName: String, context: SpringWebFluxContext): Mail {
+        val mail = Mail()
+        context.setVariable(RECIPIENT_DATA, data)
+        val content: String = templateEngine.process(templateFileName, context)
+        mail.from = appEmail
+        mail.content = content
+        return mail
     }
 
 }
