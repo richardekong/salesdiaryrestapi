@@ -12,7 +12,7 @@ import javax.validation.constraints.Size
 @Document
 data class Product(
         @Id
-        val id: String = UUID.randomUUID().toString(),
+        val id: String = SalesDiaryId.generateId(),
         var traderId: String = "",
         @field:NotBlank(message = PRODUCT_NAME_VAL_MSG)
         @field:Size(min = PRODUCT_NAME_SIZE, message = PRODUCT_NAME_SIZE_VAL_MSG)

@@ -12,15 +12,14 @@ import javax.validation.constraints.Size
 @Document
 data class User(
         @Id
-        val id:String = UUID.randomUUID().toString(),
+        val id:String = SalesDiaryId.generateId(),
         @field:Email(message = EMAIL_VAL_MSG)
         var email: String = "",
         @field:Size(min = MIN_PASSWORD_SIZE, message = PASSWORD_SIZE_VAL_MSG)
         var userPassword: String = ""
 ) : UserDetails, Mappable {
     var trader: Trader? = null
-
-
+    var twoFAData:TwoFAData = TwoFAData()
     companion object {
         const val ROLE: String = "USER"
     }
