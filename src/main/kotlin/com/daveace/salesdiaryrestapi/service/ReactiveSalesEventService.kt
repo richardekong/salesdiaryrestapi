@@ -22,6 +22,7 @@ interface ReactiveSalesEventService {
     fun findSemesterSalesEvents(): Flux<SalesEvent>
     fun findYearlySalesEvents(): Flux<SalesEvent>
     fun findSalesEvents(from: String, to: String): Flux<SalesEvent>
+    fun findSalesEventsMetrics(currentUser: User):Mono<SalesMetrics>
     fun findSalesEventsMetrics(dateString: String, currentUser:User): Mono<SalesMetrics>
     fun findDailySalesEventsMetrics(currentUser:User): Mono<SalesMetrics>
     fun findWeeklySalesEventsMetrics(currentUser:User): Mono<SalesMetrics>
