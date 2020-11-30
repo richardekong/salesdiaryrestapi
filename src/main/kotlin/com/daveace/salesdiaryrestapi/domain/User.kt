@@ -1,31 +1,32 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.mapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.util.*
 import javax.validation.constraints.Email
-import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Size
 
 @Document
 data class User(
         @Id
+        val id:String = SalesDiaryId.generateId(),
         @field:Email(message = EMAIL_VAL_MSG)
-        val email: String = "",
+        var email: String = "",
         @field:Size(min = MIN_PASSWORD_SIZE, message = PASSWORD_SIZE_VAL_MSG)
-        var userPassword: String = "",
-        @field:NotBlank(message = PHONE_VAL_MSG)
-        @field:Size(min = MIN_PHONE_SIZE)
-        var phone: String = ""
-) : UserDetails {
+        var userPassword: String = ""
+) : UserDetails, Mappable {
     var trader: Trader? = null
-    var customer: Customer? = null
-    @Transient
-    var kind: String = ""
-
+    var twoFAData:TwoFAData = TwoFAData()
     companion object {
         const val ROLE: String = "USER"
+    }
+
+    constructor(email:String,password:String):this(){
+        this.email = email
+        this.userPassword = password
     }
 
     override fun getAuthorities(): List<GrantedAuthority> = listOf()
@@ -33,7 +34,7 @@ data class User(
     override fun getUsername(): String = email
     override fun isCredentialsNonExpired(): Boolean = true
     override fun getPassword() = userPassword
-    override fun isAccountNonExpired(): Boolean = true
+    override fun isAccountNonExpired(): Boolean = true;
     override fun isAccountNonLocked(): Boolean = true
 
 }

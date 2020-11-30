@@ -1,0 +1,12 @@
+package com.daveace.salesdiaryrestapi.configuration
+
+import com.daveace.salesdiaryrestapi.sort.SortOrder
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.stereotype.Component
+
+@Component
+@ConfigurationProperties(prefix = "sales-diary.sorting")
+data class SortConfigurationProperties(
+        var by: String = "id",
+        var dir: String = SortOrder.ASC.order
+)

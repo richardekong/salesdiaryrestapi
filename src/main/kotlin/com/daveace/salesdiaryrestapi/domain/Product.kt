@@ -1,34 +1,47 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.mapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDate
 import java.util.*
-import javax.validation.constraints.*
+import javax.validation.constraints.DecimalMin
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.Size
 
 @Document
 data class Product(
+        @Id
+        val id: String = SalesDiaryId.generateId(),
+        var traderId: String = "",
         @field:NotBlank(message = PRODUCT_NAME_VAL_MSG)
         @field:Size(min = PRODUCT_NAME_SIZE, message = PRODUCT_NAME_SIZE_VAL_MSG)
-        var name: String
-) {
+        var name: String = "",
+        @field:NotBlank(message = PRODUCT_CODE_VAL_MSG)
+        var code: String = "",
+        var imagePath: String = "",
+        val date: LocalDate = LocalDate.now()):Mappable {
 
-    @Id
-    val id: String = UUID.randomUUID().toString()
-    lateinit var traderId: String
-    val date: Date = Date()
-    @field:NotNull(message = PRODUCT_CODE_VAL_MSG)
-    lateinit var code: String
-    lateinit var imagePath: String
     @field:DecimalMin("0.0")
     var stock: Double = 0.0
         set(value) {
-            if (value >= 0) field = value
+            if (value >= 0.0) field = value
         }
+
     @field:DecimalMin("1.0")
     var cost: Double = 0.0
         set(value) {
-            if (value >= 0) field = value
+            if (value >= 0.0) field = value
         }
+
+    constructor(traderId: String, name: String, code: String, imagePath: String, stock: Double, cost: Double) : this() {
+        this.traderId = traderId
+        this.name = name
+        this.code = code
+        this.imagePath = imagePath
+        this.stock = stock
+        this.cost = cost
+    }
 
 }
 

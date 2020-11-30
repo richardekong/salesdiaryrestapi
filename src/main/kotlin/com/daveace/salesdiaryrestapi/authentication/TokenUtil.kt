@@ -1,15 +1,19 @@
 package com.daveace.salesdiaryrestapi.authentication
 
 import com.daveace.salesdiaryrestapi.domain.User
+import com.daveace.salesdiaryrestapi.repository.InMemoryTokenStore
 import com.daveace.salesdiaryrestapi.repository.ReactiveUserRepository
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 import java.util.*
 
 @Component
+@PropertySource("classpath:jwt.properties")
 class TokenUtil {
 
     companion object {
@@ -17,17 +21,31 @@ class TokenUtil {
         const val SECRET = "\${jwt.secret}"
     }
 
+    @Autowired
+    private lateinit var userRepo: ReactiveUserRepository
+
+    fun getIdFromToken(token: String):String{
+        return getAllClaimsFromToken(token)["id"].toString()
+    }
+
     fun getEmailFromToken(token: String): String {
         return getAllClaimsFromToken(token).subject
+    }
+
+    fun getUserFromToken(token: String): User {
+        return userRepo.findUserByEmail(getEmailFromToken(token)).toFuture().join()
     }
 
     fun getExpirationDateFromToken(token: String): Date {
         return getAllClaimsFromToken(token).expiration
     }
 
-    fun generateToken(user: User, validity:Long = TOKEN_VALIDITY): String {
+    fun generateToken(user: User, validity: Long = TOKEN_VALIDITY): String {
         val claims: MutableMap<String, Any> = mutableMapOf()
-        return doGenerateToken(claims, user.email, validity)
+        claims["id"] = user.id
+        val token:String= doGenerateToken(claims, user.email, validity)
+        InMemoryTokenStore.storeToken(user.email, token)
+        return token
     }
 
     fun getAllClaimsFromToken(token: String): Claims {
@@ -48,14 +66,13 @@ class TokenUtil {
                 .compact()
     }
 
-    fun isTokenExpired(token:String):Boolean{
-        val expiration:Date= getExpirationDateFromToken(token)
+    fun isTokenExpired(token: String): Boolean {
+        val expiration: Date = getExpirationDateFromToken(token)
         return expiration.before(Date())
     }
 
-    fun validateToken(token:String, usr:User):Boolean{
-        val email:String = getEmailFromToken(token)
-        return email == usr.email &&  !isTokenExpired(token)
+    fun isTokenRevoked(token: String):Boolean{
+        return InMemoryTokenStore.isRevoked(token)
     }
 
 }
