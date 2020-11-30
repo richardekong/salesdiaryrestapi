@@ -59,8 +59,11 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
                         traderService.updateTraderProduct(salesEvent.traderId, it.toMap(), it.id)
                     }
         }.flatMap {
-            salesEvent.left = it.stock
-            salesEventRepo.save(salesEvent)
+            salesEventRepo.save(salesEvent.apply {
+                left = it.stock
+                costPrice *= quantitySold
+                salesPrice *= quantitySold
+            })
         }
 
     }
@@ -110,6 +113,10 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
     override fun findSalesEvents(from: String, to: String): Flux<SalesEvent> {
         return fetchEventsWithin(from, to)
+    }
+
+    override fun findSalesEventsMetrics(currentUser: User): Mono<SalesMetrics> {
+        return generateSalesMetrics(findSalesEvents(), currentUser, SalesMetrics.Category.GENERAL.category)
     }
 
     override fun findSalesEventsMetrics(dateString: String, currentUser: User): Mono<SalesMetrics> {

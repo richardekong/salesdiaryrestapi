@@ -4,6 +4,7 @@ import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.repository.ReactiveProductRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import javax.validation.constraints.NotNull
 
@@ -42,5 +43,9 @@ class ReactiveProductServiceImpl() : ReactiveProductService {
 
     override fun findProduct(id: String): Mono<Product> {
         return productRepo.findById(id)
+    }
+
+    override fun findProducts(): Flux<Product> {
+        return productRepo.findAll()
     }
 }

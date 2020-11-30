@@ -11,7 +11,7 @@ data class SalesMetrics(
         var totalProfit: Double = 0.0) : Mappable {
 
     enum class Category(val category: String) {
-        ALL("all"),
+        GENERAL("General"),
         ADHOC("Ad\u0020hoc"),
         DAILY("Daily"), WEEKLY("Weekly"),
         MONTHLY("Monthly"),
