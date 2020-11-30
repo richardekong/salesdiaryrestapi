@@ -26,19 +26,15 @@ data class Product(
     @field:DecimalMin("0.0")
     var stock: Double = 0.0
         set(value) {
-            if (value >= 0.0) {
-                field = value
-                onStockChange(this)
-            }
+            if (value >= 0.0) field = value
         }
 
-    var maxStock: Double = 0.0
+    var maxStock:Double = 0.0
 
     @field:DecimalMin("1.0")
     var cost: Double = 0.0
         set(value) {
-            if (value >= 0.0)
-                field = value
+            if (value >= 0.0) field = value
         }
 
     constructor(traderId: String, name: String, code: String, imagePath: String, stock: Double, cost: Double) : this() {
@@ -51,8 +47,8 @@ data class Product(
     }
 
     override fun onStockChange(product: Product) {
-            product.apply {
-                if (stock >= maxStock) maxStock = stock
+        product.apply{
+            if (stock >= maxStock) maxStock = stock
         }
     }
 }
