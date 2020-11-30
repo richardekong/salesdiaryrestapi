@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.domain
 
+import com.daveace.salesdiaryrestapi.listeners.StockChangeListener
 import com.daveace.salesdiaryrestapi.mapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
@@ -20,18 +21,24 @@ data class Product(
         @field:NotBlank(message = PRODUCT_CODE_VAL_MSG)
         var code: String = "",
         var imagePath: String = "",
-        val date: LocalDate = LocalDate.now()):Mappable {
+        val date: LocalDate = LocalDate.now()):Mappable, StockChangeListener {
 
     @field:DecimalMin("0.0")
     var stock: Double = 0.0
         set(value) {
-            if (value >= 0.0) field = value
+            if (value >= 0.0) {
+                field = value
+                onStockChange(this)
+            }
         }
+
+    var maxStock: Double = 0.0
 
     @field:DecimalMin("1.0")
     var cost: Double = 0.0
         set(value) {
-            if (value >= 0.0) field = value
+            if (value >= 0.0)
+                field = value
         }
 
     constructor(traderId: String, name: String, code: String, imagePath: String, stock: Double, cost: Double) : this() {
@@ -43,5 +50,10 @@ data class Product(
         this.cost = cost
     }
 
+    override fun onStockChange(product: Product) {
+            product.apply {
+                if (stock >= maxStock) maxStock = stock
+        }
+    }
 }
 
