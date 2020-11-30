@@ -1,6 +1,7 @@
 package com.daveace.salesdiaryrestapi.report
 
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
+import com.daveace.salesdiaryrestapi.mapper.Mappable
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
@@ -17,7 +18,7 @@ import kotlin.reflect.jvm.isAccessible
 class ExcelGenerator {
 
     companion object {
-        fun <T : Any> generateExcel(report: Flux<T>): Mono<ByteArrayInputStream> {
+        fun <T> generateExcel(report: Flux<T>): Mono<ByteArrayInputStream> where T : Mappable {
             return report.collectList().map { data ->
                 toExcel(data)
             }.onErrorMap { error ->
@@ -25,23 +26,64 @@ class ExcelGenerator {
             }
         }
 
-        private fun <T : Any> toExcel(data: MutableList<T>): ByteArrayInputStream {
-            return ByteArrayInputStream(
-                    ByteArrayOutputStream().apply {
-                        val workbook: Workbook = XSSFWorkbook()
-                        val sheet: Sheet = workbook.createSheet()
-                        addHeaderToSheet(sheet, createHeaderForSheet(data[0]::class))
-                        addDataToSheet(sheet, data)
-                        try {
-                            workbook.write(this)
-                        } catch (ioe: IOException) {
-                            throw RuntimeException(ioe.message)
-                        } finally {
-                            workbook.close()
-                        }
-                    }
-                            .toByteArray()
-            )
+        fun generateExcel(groupedData: Mono<Map<String?, List<Mappable>>>): Mono<ByteArrayInputStream> {
+            return toExcel(groupedData).onErrorMap { error ->
+                throw RuntimeException(error)
+            }
+        }
+
+        private fun toExcel(data: Mono<Map<String?, List<Mappable>>>): Mono<ByteArrayInputStream> {
+            val book: Workbook = XSSFWorkbook()
+
+            return data.map {
+                it.values.toMutableList()
+            }.map {
+                it.map { dataToBeWrittenToWorkBook ->
+                    addDataToWorkBook(book, dataToBeWrittenToWorkBook.toMutableList())
+                }
+            }.flatMap {
+                Mono.just(writeToWorkBook(book))
+            }
+
+        }
+
+        private fun <T> toExcel(data: MutableList<T>): ByteArrayInputStream where T : Mappable {
+            val workbook: Workbook = XSSFWorkbook()
+            addDataToWorkBook(workbook, data)
+            return writeToWorkBook(workbook)
+        }
+
+//        private fun <T> writeDataToWorkBook(workbook: Workbook, data: MutableList<T>): ByteArrayInputStream where T : Mappable {
+//            return ByteArrayInputStream(ByteArrayOutputStream().apply {
+//                val sheet = workbook.createSheet(data[0]::class.simpleName)
+//                addHeaderToSheet(sheet, createHeaderForSheet(data[0]::class))
+//                addDataToSheet(sheet, data)
+//                try {
+//                    workbook.write(this)
+//                } catch (ioe: IOException) {
+//                    throw RuntimeException(ioe.message)
+//                } finally {
+//                    workbook.close()
+//                }
+//            }.toByteArray())
+//        }
+
+        private fun <T> addDataToWorkBook(workbook: Workbook, data: MutableList<T>) where T : Mappable {
+            val sheet: Sheet = workbook.createSheet(data[0]::class.simpleName)
+            addHeaderToSheet(sheet, createHeaderForSheet(data[0]::class))
+            addDataToSheet(sheet, data)
+        }
+
+        private fun writeToWorkBook(workbook: Workbook): ByteArrayInputStream {
+            return ByteArrayInputStream(ByteArrayOutputStream().apply {
+                try {
+                    workbook.write(this)
+                } catch (ioe: IOException) {
+                    throw RuntimeException(ioe.message)
+                } finally {
+                    workbook.close()
+                }
+            }.toByteArray())
         }
 
         private fun addHeaderToSheet(sheet: Sheet, header: List<String>) {
@@ -80,3 +122,4 @@ class ExcelGenerator {
         }
     }
 }
+
