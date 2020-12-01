@@ -5,7 +5,6 @@ import com.daveace.salesdiaryrestapi.mapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDate
-import java.util.*
 import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Size
