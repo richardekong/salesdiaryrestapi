@@ -53,21 +53,6 @@ class ExcelGenerator {
             return writeToWorkBook(workbook)
         }
 
-//        private fun <T> writeDataToWorkBook(workbook: Workbook, data: MutableList<T>): ByteArrayInputStream where T : Mappable {
-//            return ByteArrayInputStream(ByteArrayOutputStream().apply {
-//                val sheet = workbook.createSheet(data[0]::class.simpleName)
-//                addHeaderToSheet(sheet, createHeaderForSheet(data[0]::class))
-//                addDataToSheet(sheet, data)
-//                try {
-//                    workbook.write(this)
-//                } catch (ioe: IOException) {
-//                    throw RuntimeException(ioe.message)
-//                } finally {
-//                    workbook.close()
-//                }
-//            }.toByteArray())
-//        }
-
         private fun <T> addDataToWorkBook(workbook: Workbook, data: MutableList<T>) where T : Mappable {
             val sheet: Sheet = workbook.createSheet(data[0]::class.simpleName)
             addHeaderToSheet(sheet, createHeaderForSheet(data[0]::class))
