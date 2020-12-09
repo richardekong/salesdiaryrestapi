@@ -4,6 +4,7 @@ import com.daveace.salesdiaryrestapi.mapper.Mappable
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.Field
+import java.time.LocalDate
 import java.util.*
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
@@ -36,6 +37,7 @@ data class Customer(
     @field:NotNull
     var location: MutableList<Double> = mutableListOf()
     var products: MutableList<Product> = mutableListOf()
+    val date: LocalDate = LocalDate.now()
 
     constructor() : this(email = "")
     constructor(email: String, name: String, phone: String, traderId: String, company: String,
