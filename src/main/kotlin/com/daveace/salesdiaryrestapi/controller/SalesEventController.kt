@@ -89,24 +89,29 @@ class SalesEventController : BaseController() {
 
     @GetMapping(SALES_DIARY_SALES_EVENTS)
     fun findAllSalesEvents(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+//            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
+//            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
+//            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
+//            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
+            @RequestParam params:MutableMap<String, String>,
             principal: Principal
     ): Flux<PagedModel<SalesEventModel>> {
         return authenticatedUser
                 .getCurrentUser(principal)
                 .flatMapMany { currentUser ->
-                    linkTo(methodOn(this.javaClass).findAllSalesEvents(size, page, by, dir, principal))
+                    linkTo(methodOn(this.javaClass).findAllSalesEvents(params, principal))
                             .withSelfRel()
                             .toMono()
                             .flatMapMany { link ->
                                 paginator.paginate(SalesEventModelAssembler(),
                                         service.findSalesEvents().filter { ownsThisEvent(currentUser, it) }
                                                 .switchIfEmpty(throwAuthenticationException()),
-                                        PageRequest.of(page, size),
-                                        link, configureSortProperties(by, dir))
+                                        PageRequest.of(
+                                            params.getOrDefault("page", DEFAULT_PAGE).toInt(),
+                                            params.getOrDefault("size", DEFAULT_SIZE).toInt()),
+                                        link, configureSortProperties(
+                                        params.getOrDefault("sort", DEFAULT_SORT_FIELD),
+                                        params.getOrDefault("dir", DEFAULT_SORT_ORDER)))
                             }
                 }
     }

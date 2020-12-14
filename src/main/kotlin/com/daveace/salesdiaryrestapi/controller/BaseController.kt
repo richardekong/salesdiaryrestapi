@@ -16,6 +16,7 @@ import com.sun.istack.internal.logging.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
@@ -34,6 +35,8 @@ class BaseController : ReactiveLinkSupport {
         const val DEFAULT_SIZE = "1"
         const val DEFAULT_PAGE = "0"
         const val DEFAULT_SORT_FIELD = "id"
+        const val PAGE ="page"
+        const val SIZE ="size"
         const val DEFAULT_SORT_ORDER = "asc"
         const val TEMPLATE_FILE_NAME = "template_file_name"
         const val RECIPIENT_DATA = "data"
@@ -68,7 +71,7 @@ class BaseController : ReactiveLinkSupport {
     }
 
     @Autowired
-    fun initGmailService(gmailService: GmailService){
+    fun initGmailService(gmailService: GmailService) {
         this.gmailService = gmailService
     }
 
@@ -83,19 +86,21 @@ class BaseController : ReactiveLinkSupport {
         return sortProps
     }
 
-    protected fun <T> throwAuthenticationException(): Mono<T> = Mono.fromRunnable { throw AuthenticationException(HttpStatus.UNAUTHORIZED.reasonPhrase) }
+    protected fun <T> throwAuthenticationException(): Mono<T> =
+        Mono.fromRunnable { throw AuthenticationException(HttpStatus.UNAUTHORIZED.reasonPhrase) }
 
     protected fun prepareAndSendEmailWithHTMLTemplate(
-            templateFileName: String = "", mail: Mail,
-            recipientData: MutableMap<String, Any?>,
-            exchange: ServerWebExchange): Mono<String> {
+        templateFileName: String = "", mail: Mail,
+        recipientData: MutableMap<String, Any?>,
+        exchange: ServerWebExchange
+    ): Mono<String> {
 
         exchange.attributes[TEMPLATE_FILE_NAME] = templateFileName
         exchange.attributes[RECIPIENT_DATA] = recipientData
         exchange.attributes[MAIL] = mail
         return gmailService.run {
             val modifiedMail: Mail = mailTemplatingService
-                    .createMailFromTemplate(exchange)
+                .createMailFromTemplate(exchange)
             println("\ncreated mail: $modifiedMail\n")
             sendHTML(modifiedMail).apply {
                 subscribe({
@@ -106,4 +111,6 @@ class BaseController : ReactiveLinkSupport {
             }
         }
     }
+
 }
+

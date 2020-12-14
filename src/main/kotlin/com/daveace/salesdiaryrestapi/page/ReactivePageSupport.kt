@@ -25,6 +25,10 @@ interface ReactivePageSupport {
         const val QUERY_SYMBOL = "?"
         const val QUERY_DELIMITER = "&"
         const val QUERY_VALUE_PAIR_DEL = "="
+        const val DEFAULT_SIZE = "1"
+        const val DEFAULT_PAGE = "0"
+        const val DEFAULT_SORT_FIELD = "id"
+        const val DEFAULT_SORT_ORDER = "asc"
     }
 
     fun <S : Any, T : RepresentationModel<T>> paginate(

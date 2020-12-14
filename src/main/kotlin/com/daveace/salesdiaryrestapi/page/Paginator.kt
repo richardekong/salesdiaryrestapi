@@ -1,6 +1,7 @@
 package com.daveace.salesdiaryrestapi.page
 
 import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
+import com.daveace.salesdiaryrestapi.mapper.Mappable
 import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.FIRST
 import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.LAST
 import com.daveace.salesdiaryrestapi.page.ReactivePageSupport.Companion.NEXT
@@ -29,11 +30,12 @@ class Paginator : ReactivePageSupport {
     }
 
     override fun <S : Any, T : RepresentationModel<T>> paginate(
-            supportAssembler: RepresentationModelAssemblerSupport<S, T>,
-            resourceFlux: Flux<S>,
-            pageRequest: PageRequest,
-            link: Link,
-            sortProps: SortConfigurationProperties): Flux<PagedModel<T>> {
+        supportAssembler: RepresentationModelAssemblerSupport<S, T>,
+        resourceFlux: Flux<S>,
+        pageRequest: PageRequest,
+        link: Link,
+        sortProps: SortConfigurationProperties
+    ): Flux<PagedModel<T>> {
 
         val sortedResources: MutableList<S> = sortResources(resourceFlux, sortProps)
         val totalElements: Int = sortedResources.size
@@ -89,14 +91,20 @@ class Paginator : ReactivePageSupport {
     }
 
     private fun createPagedMetadata(req: PageRequest, totalElement: Int, totalPages: Int): PagedModel.PageMetadata =
-            PagedModel.PageMetadata(req.pageSize.toLong(), req.pageNumber.toLong(), totalElement.toLong(), totalPages.toLong())
+        PagedModel.PageMetadata(
+            req.pageSize.toLong(),
+            req.pageNumber.toLong(),
+            totalElement.toLong(),
+            totalPages.toLong()
+        )
 
     private fun <S : Any> sortResources(resourceFlux: Flux<S>, @NotNull sortProps: SortConfigurationProperties)
             : MutableList<S> {
         return resourceFlux.collectList()
-                .map { resources -> sorter.arrangeBy(resources, sortProps.by, sortProps.dir) }
-                .toFuture()
-                .join()
+            .map { resources -> sorter.arrangeBy(resources, sortProps.by, sortProps.dir) }
+            .toFuture()
+            .join()
     }
+
 }
 
