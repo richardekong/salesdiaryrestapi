@@ -30,7 +30,7 @@ class ReactiveUserServiceImpl : ReactiveUserService {
 
     private lateinit var mailService: MailService
 
-    @Value("\${mailgun.api.email}")
+    @Value("\${gmail.user.email}")
     private lateinit var appEmail: String
 
     @Autowired
