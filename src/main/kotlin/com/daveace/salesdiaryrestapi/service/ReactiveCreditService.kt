@@ -13,4 +13,5 @@ interface ReactiveCreditService {
     fun findCreditsByCustomerId(id: String): Flux<Credit>
     fun findCreditsByProductId(id: String): Flux<Credit>
     fun findAllCredits(): Flux<Credit>
+    fun redeemCredit(credit:Credit):Mono<Credit>
 }
