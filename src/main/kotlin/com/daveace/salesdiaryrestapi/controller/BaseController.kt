@@ -4,8 +4,6 @@ import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
 import com.daveace.salesdiaryrestapi.authentication.TokenUtil
 import com.daveace.salesdiaryrestapi.configuration.SortConfigurationProperties
 import com.daveace.salesdiaryrestapi.domain.Mail
-import com.daveace.salesdiaryrestapi.domain.SalesEvent
-import com.daveace.salesdiaryrestapi.domain.User
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
 import com.daveace.salesdiaryrestapi.hateoas.link.ReactiveLinkSupport
 import com.daveace.salesdiaryrestapi.page.Paginator
@@ -14,9 +12,10 @@ import com.daveace.salesdiaryrestapi.service.MailService
 import com.daveace.salesdiaryrestapi.service.MailTemplatingService
 import com.sun.istack.internal.logging.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
@@ -35,8 +34,10 @@ class BaseController : ReactiveLinkSupport {
         const val DEFAULT_SIZE = "1"
         const val DEFAULT_PAGE = "0"
         const val DEFAULT_SORT_FIELD = "id"
-        const val PAGE ="page"
-        const val SIZE ="size"
+        const val PAGE = "page"
+        const val SIZE = "size"
+        const val DIR = "dir"
+        const val SORT = "sort"
         const val DEFAULT_SORT_ORDER = "asc"
         const val TEMPLATE_FILE_NAME = "template_file_name"
         const val RECIPIENT_DATA = "data"
@@ -84,6 +85,20 @@ class BaseController : ReactiveLinkSupport {
         sortProps.by = by
         sortProps.dir = dir
         return sortProps
+    }
+
+    protected fun configureSortProperties(params: MutableMap<String, String>): SortConfigurationProperties {
+        return configureSortProperties(
+            params.getOrDefault(SORT, DEFAULT_SORT_FIELD),
+            params.getOrDefault(DIR, DEFAULT_SORT_ORDER)
+        )
+    }
+
+    protected fun specifyPageRequest(params: MutableMap<String, String>): PageRequest {
+        return PageRequest.of(
+            params.getOrDefault(PAGE, DEFAULT_PAGE).toInt(),
+            params.getOrDefault(SIZE, DEFAULT_SIZE).toInt()
+        )
     }
 
     protected fun <T> throwAuthenticationException(): Mono<T> =
