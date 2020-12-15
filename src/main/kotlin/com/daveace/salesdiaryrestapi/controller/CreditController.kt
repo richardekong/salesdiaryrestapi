@@ -9,12 +9,10 @@ import com.daveace.salesdiaryrestapi.hateoas.assembler.CreditAssembler
 import com.daveace.salesdiaryrestapi.hateoas.model.CreditModel
 import com.daveace.salesdiaryrestapi.service.ReactiveCreditService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
-import org.springframework.security.authentication.RememberMeAuthenticationToken
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -66,14 +64,11 @@ class CreditController : BaseController() {
     @GetMapping("/sales-diary/credits/{cId}")
     fun findCreditsByCustomerId(
         @PathVariable cId: String,
-        @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-        @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-        @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
-        @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
+        @RequestParam params: MutableMap<String, String>,
         principal: Principal
     ): Flux<PagedModel<CreditModel>> {
         return authenticatedUser.getCurrentUser(principal).flatMapMany { currentUser ->
-            linkTo(methodOn(this.javaClass).findCreditsByCustomerId(cId, size, page, dir, by, principal))
+            linkTo(methodOn(this.javaClass).findCreditsByCustomerId(cId, params, principal))
                 .withSelfRel()
                 .toMono()
                 .flatMapMany { link ->
@@ -83,7 +78,7 @@ class CreditController : BaseController() {
                             .switchIfEmpty(Mono.fromRunnable { throw NotFoundException() })
                             .filter { currentUser.id == it.traderId() }
                             .switchIfEmpty(Mono.fromRunnable { throw AuthenticationException() }),
-                        PageRequest.of(page, size), link, configureSortProperties(by, dir)
+                        specifyPageRequest(params), link, configureSortProperties(params)
                     )
                 }
         }
@@ -92,15 +87,12 @@ class CreditController : BaseController() {
     @GetMapping("sales-diary/credits/{pId}")
     fun findCreditsByProductId(
         @PathVariable pId: String,
-        @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-        @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-        @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String,
-        @RequestParam(name = "by", defaultValue = DEFAULT_SORT_FIELD) by: String,
+        @RequestParam params: MutableMap<String, String>,
         principal: Principal
     ): Flux<PagedModel<CreditModel>> {
 
         return authenticatedUser.getCurrentUser(principal).flatMapMany { currentUser ->
-            linkTo(methodOn(this.javaClass).findCreditsByProductId(pId, size, page, dir, by, principal)).withSelfRel()
+            linkTo(methodOn(this.javaClass).findCreditsByProductId(pId, params, principal)).withSelfRel()
                 .toMono().flatMapMany { link ->
                     paginator.paginate(
                         CreditAssembler(),
@@ -108,7 +100,7 @@ class CreditController : BaseController() {
                             .switchIfEmpty(Mono.fromRunnable { throw NotFoundException() })
                             .filter { currentUser.id == it.traderId() }
                             .switchIfEmpty(Mono.fromRunnable { throw AuthenticationException() }),
-                        PageRequest.of(page, size), link, configureSortProperties(by, dir)
+                        specifyPageRequest(params), link, configureSortProperties(params)
                     )
                 }
         }
@@ -129,17 +121,28 @@ class CreditController : BaseController() {
                         creditService.findAllCredits()
                             .filter { currentUser.id == it.traderId() }
                             .switchIfEmpty(Mono.fromRunnable { throw AuthenticationException() }),
-                        PageRequest.of(
-                            params.getOrDefault("page", DEFAULT_SIZE).toInt(),
-                            params.getOrDefault("size", DEFAULT_PAGE).toInt()
-                        ),
-                        link, configureSortProperties(
-                            params.getOrDefault("dir", DEFAULT_SORT_ORDER),
-                            params.getOrDefault("sort", DEFAULT_SORT_FIELD)
-                        )
+                        specifyPageRequest(params), link, configureSortProperties(params)
                     )
                 }
         }
     }
+
+    @PatchMapping("sales-diary/credits/{id}")
+    fun redeemCredit(@PathVariable id: String, principal: Principal): Mono<CreditModel> {
+        return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
+            creditService.findCreditById(id)
+                .switchIfEmpty(Mono.fromRunnable { throw NotFoundException() })
+                .filter { currentUser.id == it.traderId() }
+                .switchIfEmpty(Mono.fromRunnable { throw AuthenticationException() })
+                .flatMap { creditService.redeemCredit(it) }
+                .flatMap {
+                    respondWithReactiveLink(
+                        CreditModel(it),
+                        linkTo(methodOn(this.javaClass).redeemCredit(id, principal))
+                    )
+                }
+        }
+    }
+
 }
 
