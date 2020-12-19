@@ -2,7 +2,6 @@ package com.daveace.salesdiaryrestapi.service
 
 import com.daveace.salesdiaryrestapi.domain.Credit
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
-import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
 import com.daveace.salesdiaryrestapi.repository.ReactiveCreditRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -44,6 +43,6 @@ class ReactiveCreditServiceImpl : ReactiveCreditService {
     }
 
     override fun redeemCredit(credit: Credit): Mono<Credit> {
-        return repo.save(credit.apply {redeem(true)})
+        return repo.save(credit.apply { redeem(true) })
     }
 }
