@@ -1,13 +1,16 @@
 package com.daveace.salesdiaryrestapi.controller
 
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_CREDITS
+import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_CREDITS_FROM_EVENT
 import com.daveace.salesdiaryrestapi.domain.Credit
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
 import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
-import com.daveace.salesdiaryrestapi.hateoas.assembler.CreditAssembler
+import com.daveace.salesdiaryrestapi.hateoas.assembler.CreditModelAssembler
 import com.daveace.salesdiaryrestapi.hateoas.model.CreditModel
 import com.daveace.salesdiaryrestapi.service.ReactiveCreditService
+import com.daveace.salesdiaryrestapi.service.ReactiveSalesEventService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
@@ -24,13 +27,19 @@ import javax.validation.Valid
 class CreditController : BaseController() {
 
     private lateinit var creditService: ReactiveCreditService
+    private lateinit var eventService: ReactiveSalesEventService
 
     @Autowired
     fun initCreditService(creditService: ReactiveCreditService) {
         this.creditService = creditService
     }
 
-    @PostMapping("/sales-diary/credits")
+    @Autowired
+    fun initEventService(eventService: ReactiveSalesEventService) {
+        this.eventService = eventService
+    }
+
+    @PostMapping(SALES_DIARY_CREDITS)
     @ResponseStatus(HttpStatus.CREATED)
     fun createCreditRecord(@Valid @RequestBody credit: Credit): Mono<CreditModel> {
         return creditService.createCreditRecord(credit).flatMap {
@@ -38,7 +47,7 @@ class CreditController : BaseController() {
         }
     }
 
-    @PostMapping("/sales-diary/credit-from-events")
+    @PostMapping(SALES_DIARY_CREDITS_FROM_EVENT)
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun createCreditRecordFromEvent(@Valid @RequestBody event: SalesEvent): Mono<CreditModel> {
         return creditService.createCreditRecord(event).flatMap { credit ->
@@ -46,7 +55,7 @@ class CreditController : BaseController() {
         }
     }
 
-    @GetMapping("/sales-diary/credits/{id}")
+    @GetMapping("$SALES_DIARY_CREDITS/{id}")
     fun findCredit(@PathVariable id: String): Mono<CreditModel> {
         return authenticatedUser.getCurrentUser().flatMap { currentUser ->
             creditService.findCreditById(id)
@@ -61,7 +70,7 @@ class CreditController : BaseController() {
         }
     }
 
-    @GetMapping("/sales-diary/credits/{cId}")
+    @GetMapping("$SALES_DIARY_CREDITS/{cId}")
     fun findCreditsByCustomerId(
         @PathVariable cId: String,
         @RequestParam params: MutableMap<String, String>,
@@ -73,7 +82,7 @@ class CreditController : BaseController() {
                 .toMono()
                 .flatMapMany { link ->
                     paginator.paginate(
-                        CreditAssembler(),
+                        CreditModelAssembler(),
                         creditService.findCreditsByCustomerId(cId)
                             .switchIfEmpty(Mono.fromRunnable { throw NotFoundException() })
                             .filter { currentUser.id == it.traderId() }
@@ -84,7 +93,7 @@ class CreditController : BaseController() {
         }
     }
 
-    @GetMapping("sales-diary/credits/{pId}")
+    @GetMapping("$SALES_DIARY_CREDITS/{pId}")
     fun findCreditsByProductId(
         @PathVariable pId: String,
         @RequestParam params: MutableMap<String, String>,
@@ -95,7 +104,7 @@ class CreditController : BaseController() {
             linkTo(methodOn(this.javaClass).findCreditsByProductId(pId, params, principal)).withSelfRel()
                 .toMono().flatMapMany { link ->
                     paginator.paginate(
-                        CreditAssembler(),
+                        CreditModelAssembler(),
                         creditService.findCreditsByProductId(pId)
                             .switchIfEmpty(Mono.fromRunnable { throw NotFoundException() })
                             .filter { currentUser.id == it.traderId() }
@@ -106,7 +115,7 @@ class CreditController : BaseController() {
         }
     }
 
-    @GetMapping("/sales-diary/credits")
+    @GetMapping(SALES_DIARY_CREDITS)
     fun findCredits(
         @RequestParam params: MutableMap<String, String>,
         principal: Principal
@@ -117,7 +126,7 @@ class CreditController : BaseController() {
                 .toMono()
                 .flatMapMany { link ->
                     paginator.paginate(
-                        CreditAssembler(),
+                        CreditModelAssembler(),
                         creditService.findAllCredits()
                             .filter { currentUser.id == it.traderId() }
                             .switchIfEmpty(Mono.fromRunnable { throw AuthenticationException() }),
@@ -127,7 +136,7 @@ class CreditController : BaseController() {
         }
     }
 
-    @PatchMapping("sales-diary/credits/{id}")
+    @PatchMapping("$SALES_DIARY_CREDITS/{id}")
     fun redeemCredit(@PathVariable id: String, principal: Principal): Mono<CreditModel> {
         return authenticatedUser.getCurrentUser(principal).flatMap { currentUser ->
             creditService.findCreditById(id)
@@ -135,6 +144,23 @@ class CreditController : BaseController() {
                 .filter { currentUser.id == it.traderId() }
                 .switchIfEmpty(Mono.fromRunnable { throw AuthenticationException() })
                 .flatMap { creditService.redeemCredit(it) }
+                .doOnSuccess {
+                    eventService.apply {
+                        saveSalesEvent(
+                            SalesEvent(
+                                it.traderId(),
+                                it.productId(),
+                                it.customerId(),
+                                it.product(),
+                                it.quantity(),
+                                it.salesPrice().times(-1),
+                                it.costPrice(),
+                                it.left(),
+                                it.location()
+                            )
+                        )
+                    }
+                }
                 .flatMap {
                     respondWithReactiveLink(
                         CreditModel(it),
