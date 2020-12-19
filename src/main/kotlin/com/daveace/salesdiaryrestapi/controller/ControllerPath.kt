@@ -16,6 +16,8 @@ class ControllerPath {
         private const val CUSTOMERS = "/customers"
         private const val PRODUCTS = "/products"
         private const val EVENTS = "/events"
+        private const val CREDITS = "/credits"
+        private const val EXPENDITURES = "/expenditures"
         private const val DAILY = "/daily"
         private const val WEEKLY = "/weekly"
         private const val MONTHLY = "/monthly"
@@ -88,6 +90,10 @@ class ControllerPath {
         const val SALES_DIARY_SEMESTER_SALES_EVENTS_METRICS = "$SALES_DIARY_SEMESTER_SALES_EVENTS$METRICS"
         const val SALES_DIARY_YEARLY_SALES_EVENTS_METRICS = "$SALES_DIARY_YEARLY_SALES_EVENTS$METRICS"
 
+        const val SALES_DIARY_CREDITS = "$SALES_DIARY$CREDITS"
+        const val SALES_DIARY_CREDITS_FROM_EVENT = "$SALES_DIARY_CREDITS-from-events"
+
+        const val SALES_DAIRY_EXPS = "$SALES_DIARY$EXPENDITURES"
 
     }
 }
