@@ -8,20 +8,25 @@ import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSuppor
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
 
-class CreditAssembler : RepresentationModelAssemblerSupport<Credit, CreditModel>(CreditController::class.java, CreditModel::class.java) {
+class CreditModelAssembler :
+    RepresentationModelAssemblerSupport<Credit, CreditModel>(CreditController::class.java, CreditModel::class.java) {
 
     override fun toModel(credit: Credit): CreditModel {
         return instantiateModel(credit)
-                .add(linkTo(methodOn(CreditController::class.java)
-                        .findCredit(credit.id))
-                        .withSelfRel()
-                        .toMono()
-                        .toFuture()
-                        .join())
+            .add(
+                linkTo(
+                    methodOn(CreditController::class.java)
+                        .findCredit(credit.id)
+                )
+                    .withSelfRel()
+                    .toMono()
+                    .toFuture()
+                    .join()
+            )
     }
 
-    override fun toCollectionModel(entities: MutableIterable<Credit>): CollectionModel<CreditModel> {
-        return super.toCollectionModel(entities)
+    override fun toCollectionModel(creditRecords: MutableIterable<Credit>): CollectionModel<CreditModel> {
+        return super.toCollectionModel(creditRecords)
     }
 
     override fun instantiateModel(credit: Credit): CreditModel {
