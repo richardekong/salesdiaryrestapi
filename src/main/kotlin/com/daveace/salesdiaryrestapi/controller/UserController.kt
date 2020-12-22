@@ -20,7 +20,6 @@ import com.daveace.salesdiaryrestapi.service.ReactiveUserService
 import com.daveace.salesdiaryrestapi.service.SalesDiaryPasswordEncoderService
 import com.daveace.salesdiaryrestapi.service.TwoFAService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
 import org.springframework.hateoas.Link
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
@@ -47,10 +46,6 @@ class UserController : BaseController() {
 
     companion object {
         const val WRONG_CREDENTIAL = "Wrong email or password!"
-        const val DEFAULT_SIZE = "1"
-        const val DEFAULT_PAGE = "0"
-        const val DEFAULT_SORT_FIELD = "id"
-        const val DEFAULT_SORT_ORDER = "asc"
         const val SIGN_UP_MAIL_TEMPLATE = "sign_up_mail_template"
         const val PASSWORD_RESET_LINK_MAIL_TEMPLATE = "password_reset_link_mail_template"
         const val PASSWORD_RESET_MAIL_TEMPLATE = "password_reset_mail_template"
@@ -157,25 +152,17 @@ class UserController : BaseController() {
     }
 
     @GetMapping(SALES_DIARY_USERS)
-    fun findAllUser(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
-    ): Flux<PagedModel<UserModel>> {
-        val pageRequest: PageRequest = PageRequest.of(page, size)
-        sortProps.by = by
-        sortProps.dir = dir
+    fun findAllUser(@RequestParam params:MutableMap<String, String>, principal: Principal): Flux<PagedModel<UserModel>> {
         val link: Link = linkTo(methodOn(this.javaClass)
-                .findAllUser(size, page, by, dir))
+                .findAllUser(params, principal))
                 .withSelfRel()
                 .toMono().toFuture().join()
         return paginator.paginate(
                 UserModelAssembler(),
                 userService.findAll(),
-                pageRequest,
+                specifyPageRequest(params),
                 link,
-                sortProps
+                configureSortProperties(params)
         )
     }
 

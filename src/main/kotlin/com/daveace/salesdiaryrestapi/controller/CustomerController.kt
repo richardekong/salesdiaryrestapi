@@ -7,26 +7,19 @@ import com.daveace.salesdiaryrestapi.hateoas.assembler.CustomerModelAssembler
 import com.daveace.salesdiaryrestapi.hateoas.model.CustomerModel
 import com.daveace.salesdiaryrestapi.service.ReactiveCustomerService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.security.Principal
 
 @RestController
 @RequestMapping(API)
 class CustomerController() : BaseController() {
 
     private lateinit var customerService: ReactiveCustomerService
-
-    companion object {
-        const val DEFAULT_SIZE = "1"
-        const val DEFAULT_PAGE = "0"
-        const val DEFAULT_SORT_FIELD = "email"
-        const val DEFAULT_SORT_ORDER = "asc"
-    }
 
     @Autowired
     constructor(customerService: ReactiveCustomerService) : this() {
@@ -42,23 +35,20 @@ class CustomerController() : BaseController() {
 
     @GetMapping(SALES_DIARY_CUSTOMERS)
     fun findAllCustomers(
-            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) size: Int,
-            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) page: Int,
-            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT_FIELD) by: String,
-            @RequestParam(name = "dir", defaultValue = DEFAULT_SORT_ORDER) dir: String
+        @RequestParam params: MutableMap<String, String>,
+        principal: Principal
     ): Flux<PagedModel<CustomerModel>> {
-        sortProps.by = by
-        sortProps.dir = dir
-
-        return linkTo(methodOn(this.javaClass)
-                .findAllCustomers(size, page, by, dir))
+        return authenticatedUser.getCurrentUser(principal).flatMapMany { currentUser ->
+            linkTo(methodOn(this.javaClass).findAllCustomers(params, principal))
                 .withSelfRel()
                 .toMono().flatMapMany { link ->
                     paginator.paginate(
-                            CustomerModelAssembler(),
-                            customerService.findAllCustomers(),
-                            PageRequest.of(page, size), link, sortProps)
+                        CustomerModelAssembler(),
+                        customerService.findAllCustomers().filter { currentUser.id == it.traderId },
+                        specifyPageRequest(params), link, configureSortProperties(params)
+                    )
                 }
+        }
     }
 }
 
