@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.hateoas.assembler
 
+import com.daveace.salesdiaryrestapi.controller.CreditController
 import com.daveace.salesdiaryrestapi.controller.CustomerController
 import com.daveace.salesdiaryrestapi.domain.Customer
 import com.daveace.salesdiaryrestapi.hateoas.model.CustomerModel
@@ -12,11 +13,12 @@ class CustomerModelAssembler : RepresentationModelAssemblerSupport<Customer, Cus
 (CustomerController::class.java, CustomerModel::class.java) {
 
     override fun toModel(customer: Customer): CustomerModel {
-        return instantiateModel(customer)
-                .add(linkTo(methodOn(CustomerController::class.java)
-                        .findCustomerByEmail(customer.email))
-                        .withSelfRel()
-                        .toMono().toFuture().join())
+        return instantiateModel(customer).apply {
+            linkTo(methodOn(CreditController::class.java).findCredit(customer.email))
+                .withSelfRel()
+                .toMono()
+                .subscribe { add(it) }
+        }
     }
 
     override fun toCollectionModel(customers: MutableIterable<Customer>): CollectionModel<CustomerModel> {

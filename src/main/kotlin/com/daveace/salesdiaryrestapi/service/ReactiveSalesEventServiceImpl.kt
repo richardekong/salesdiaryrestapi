@@ -1,9 +1,7 @@
 package com.daveace.salesdiaryrestapi.service
 
 import com.daveace.salesdiaryrestapi.authentication.AuthenticatedUser
-import com.daveace.salesdiaryrestapi.domain.SalesEvent
-import com.daveace.salesdiaryrestapi.domain.SalesMetrics
-import com.daveace.salesdiaryrestapi.domain.User
+import com.daveace.salesdiaryrestapi.domain.*
 import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
 import com.daveace.salesdiaryrestapi.repository.ReactiveSalesEventRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +21,7 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     private lateinit var authenticatedUser: AuthenticatedUser
     private lateinit var productService: ReactiveProductService
     private lateinit var traderService: ReactiveTraderService
+    private lateinit var customerService: ReactiveCustomerService
 
     companion object {
         private const val DATE_PATTERN = "yyyy-MM-dd"
@@ -32,32 +31,36 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
     }
 
     @Autowired
-    constructor(salesEventRepo: ReactiveSalesEventRepository,
-                authenticatedUser: AuthenticatedUser,
-                productService: ReactiveProductService,
-                traderService: ReactiveTraderService) : this() {
+    constructor(
+        salesEventRepo: ReactiveSalesEventRepository,
+        authenticatedUser: AuthenticatedUser,
+        productService: ReactiveProductService,
+        traderService: ReactiveTraderService,
+        customerService: ReactiveCustomerService
+    ) : this() {
 
         this.salesEventRepo = salesEventRepo
         this.authenticatedUser = authenticatedUser
         this.productService = productService
         this.traderService = traderService
+        this.customerService = customerService
     }
 
     override fun saveSalesEvent(salesEvent: SalesEvent): Mono<SalesEvent> {
         return productService.run {
             findProduct(salesEvent.productId)
-                    .filter { it.stock > 0.0 }
-                    .switchIfEmpty(Mono.fromRunnable { throw NotFoundException(PRODUCT_OUT_OF_STOCK) })
-                    .filter { it.stock >= salesEvent.quantitySold }
-                    .switchIfEmpty(Mono.fromRunnable { throw NotFoundException(PRODUCT_NOT_ENOUGH) })
-                    .flatMap {
-                        it.apply {
-                            stock -= salesEvent.quantitySold
-                            salesEvent.product = this.name
-                        }
-                        save(it)
-                        traderService.updateTraderProduct(salesEvent.traderId, it.toMap(), it.id)
+                .filter { it.stock > 0.0 }
+                .switchIfEmpty(Mono.fromRunnable { throw NotFoundException(PRODUCT_OUT_OF_STOCK) })
+                .filter { it.stock >= salesEvent.quantitySold }
+                .switchIfEmpty(Mono.fromRunnable { throw NotFoundException(PRODUCT_NOT_ENOUGH) })
+                .flatMap {
+                    it.apply {
+                        stock -= salesEvent.quantitySold
+                        salesEvent.product = this.name
                     }
+                    save(it)
+                    traderService.updateTraderProduct(salesEvent.traderId, it.toMap(), it.id)
+                }
         }.flatMap {
             salesEventRepo.save(salesEvent.apply {
                 left = it.stock
@@ -78,12 +81,12 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
 
     override fun findSalesEvents(dateString: String): Flux<SalesEvent> {
         return Mono.just(LocalDate.parse(dateString, DateTimeFormatter.ofPattern(DATE_PATTERN)))
-                .flatMapMany {
-                    salesEventRepo.findSalesEventsByDate(it)
-                }
-                .switchIfEmpty(Mono.fromRunnable {
-                    throw NotFoundException()
-                })
+            .flatMapMany {
+                salesEventRepo.findSalesEventsByDate(it)
+            }
+            .switchIfEmpty(Mono.fromRunnable {
+                throw NotFoundException()
+            })
     }
 
     override fun findDailySalesEvents(): Flux<SalesEvent> {
@@ -151,28 +154,48 @@ class ReactiveSalesEventServiceImpl() : ReactiveSalesEventService {
         return generateSalesMetrics(findSalesEvents(from, to), currentUser, SalesMetrics.Category.ADHOC.category)
     }
 
-    private fun fetchEventsWithin(startDateString: String, endDateString: String = LocalDate.now().toString()): Flux<SalesEvent> {
-        val startDate = LocalDate.parse(startDateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
-        val endDate = LocalDate.parse(endDateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
-        return findSalesEvents().filter { dateIsBetween(startDate, it.date, endDate) }.switchIfEmpty(throwRestException())
+    override fun findCustomerRetentionMetrics(
+        salesMetrics: SalesMetrics,
+        customers: List<Customer>,
+        purchaseTimes: Int
+    ): Mono<CustomerRetentionMetrics> {
+        return Mono.just(CustomerRetentionMetrics(salesMetrics, customers, purchaseTimes))
     }
 
-    private fun generateSalesMetrics(@NotNull events: Flux<SalesEvent>, @NotNull currentUser: User, @NotBlank category: String): Mono<SalesMetrics> {
+    private fun fetchEventsWithin(
+        startDateString: String,
+        endDateString: String = LocalDate.now().toString()
+    ): Flux<SalesEvent> {
+        val startDate = LocalDate.parse(startDateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        val endDate = LocalDate.parse(endDateString, DateTimeFormatter.ofPattern(DATE_PATTERN))
+        return findSalesEvents().filter { dateIsBetween(startDate, it.date, endDate) }
+            .switchIfEmpty(throwRestException())
+    }
+
+    private fun generateSalesMetrics(
+        @NotNull events: Flux<SalesEvent>,
+        @NotNull currentUser: User,
+        @NotBlank category: String
+    ): Mono<SalesMetrics> {
         return events.filter { currentUser.id == it.traderId }
-                .switchIfEmpty(throwRestException())
-                .collectList()
-                .flatMap { Mono.just(SalesMetrics(category, it)) }
+            .switchIfEmpty(throwRestException())
+            .collectList()
+            .flatMap { Mono.just(SalesMetrics(category, it)) }
     }
 
     private fun <T> throwRestException(): Mono<T> {
         return Mono.fromRunnable { throw NotFoundException(HttpStatus.NOT_FOUND.reasonPhrase) }
     }
 
-    private fun dateIsBetween(startDate: LocalDate, providedDate: LocalDate, endDate: LocalDate = LocalDate.now()): Boolean {
+    private fun dateIsBetween(
+        startDate: LocalDate,
+        providedDate: LocalDate,
+        endDate: LocalDate = LocalDate.now()
+    ): Boolean {
         if (startDate.isAfter(endDate).or(startDate.isEqual(endDate)))
             throw RuntimeException(INVALID_DATE_RANGE)
         return (startDate.isEqual(providedDate).or(startDate.isBefore(providedDate)))
-                .and(endDate.isEqual(providedDate).or(endDate.isAfter(providedDate)))
+            .and(endDate.isEqual(providedDate).or(endDate.isAfter(providedDate)))
     }
 
 }

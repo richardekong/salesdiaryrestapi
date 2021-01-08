@@ -12,17 +12,12 @@ class CreditModelAssembler :
     RepresentationModelAssemblerSupport<Credit, CreditModel>(CreditController::class.java, CreditModel::class.java) {
 
     override fun toModel(credit: Credit): CreditModel {
-        return instantiateModel(credit)
-            .add(
-                linkTo(
-                    methodOn(CreditController::class.java)
-                        .findCredit(credit.id)
-                )
-                    .withSelfRel()
-                    .toMono()
-                    .toFuture()
-                    .join()
-            )
+        return instantiateModel(credit).apply {
+            linkTo(methodOn(CreditController::class.java).findCredit(credit.id))
+                .withSelfRel()
+                .toMono()
+                .subscribe { add(it) }
+        }
     }
 
     override fun toCollectionModel(creditRecords: MutableIterable<Credit>): CollectionModel<CreditModel> {

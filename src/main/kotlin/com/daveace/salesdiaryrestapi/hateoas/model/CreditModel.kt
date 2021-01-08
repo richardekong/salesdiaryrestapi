@@ -12,6 +12,7 @@ class CreditModel() : RepresentationModel<CreditModel>() {
     var traderId :String = ""
     var customerId: String = ""
     var productId: String = ""
+    var product:String = ""
     var salesPrice: Double = 0.0
     var quantity: Double = 0.0
     lateinit var date: LocalDate
@@ -22,6 +23,7 @@ class CreditModel() : RepresentationModel<CreditModel>() {
         traderId = credit.traderId()
         customerId = credit.customerId()
         productId = credit.productId()
+        product = credit.product()
         salesPrice = credit.salesPrice()
         quantity = credit.quantity()
         date = credit.date()

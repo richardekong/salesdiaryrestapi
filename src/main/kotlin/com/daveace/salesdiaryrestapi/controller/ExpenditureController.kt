@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.hateoas.PagedModel
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -32,15 +33,17 @@ class ExpenditureController : BaseController() {
     }
 
     @PostMapping(SALES_DAIRY_EXPS)
+    @ResponseStatus(HttpStatus.CREATED)
     fun recordExpenditure(
-        @Valid @RequestBody entries: MutableMap<String, Double>,
-        @RequestParam(name = "traderId", required = true) traderId: String
+        @Valid @RequestBody entries: MutableMap<String, Double>, principal: Principal
     ): Mono<ExpenditureModel> {
-        return expenditureService.createExpenditure(traderId, entries)
-            .flatMap {
+        return authenticatedUser.getCurrentUser(principal)
+            .flatMap { currentUser ->
+                expenditureService.createExpenditure(currentUser.id, entries)
+            }.flatMap {
                 respondWithReactiveLink(
                     ExpenditureModel(it),
-                    linkTo(methodOn(this.javaClass).recordExpenditure(entries, traderId))
+                    methodOn(this.javaClass).recordExpenditure(entries, principal)
                 )
             }
     }
@@ -48,7 +51,7 @@ class ExpenditureController : BaseController() {
     @GetMapping("$SALES_DAIRY_EXPS/{id}")
     fun findExpenditureById(@PathVariable id: String): Mono<ExpenditureModel> {
         return expenditureService.findExpenditureById(id).flatMap {
-            respondWithReactiveLink(ExpenditureModel(it), linkTo(methodOn(this.javaClass).findExpenditureById(id)))
+            respondWithReactiveLink(ExpenditureModel(it), methodOn(this.javaClass).findExpenditureById(id))
         }
     }
 
@@ -57,7 +60,7 @@ class ExpenditureController : BaseController() {
         return expenditureService.findExpenditureByTraderId(traderId).flatMap {
             respondWithReactiveLink(
                 ExpenditureModel(it),
-                linkTo(methodOn(this.javaClass).findExpenditureByTraderId(traderId))
+                methodOn(this.javaClass).findExpenditureByTraderId(traderId)
             )
         }
     }

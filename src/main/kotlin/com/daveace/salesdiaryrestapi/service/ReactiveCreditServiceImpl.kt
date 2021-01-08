@@ -18,10 +18,6 @@ class ReactiveCreditServiceImpl : ReactiveCreditService {
         this.repo = repo
     }
 
-    override fun createCreditRecord(credit: Credit): Mono<Credit> {
-        return repo.save(credit)
-    }
-
     override fun createCreditRecord(event: SalesEvent): Mono<Credit> {
         return repo.save(Credit(event))
     }
@@ -46,3 +42,4 @@ class ReactiveCreditServiceImpl : ReactiveCreditService {
         return repo.save(credit.apply { redeem(true) })
     }
 }
+

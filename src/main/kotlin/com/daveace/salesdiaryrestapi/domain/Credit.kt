@@ -50,5 +50,5 @@ data class Credit(@field:Id val id: String = SalesDiaryId.generateId()) : Mappab
     fun location() = location
     fun redeemed() = redeemed
 
-
 }
+

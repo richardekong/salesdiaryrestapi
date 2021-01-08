@@ -7,7 +7,6 @@ import reactor.core.publisher.Mono
 
 interface ReactiveCreditService {
 
-    fun createCreditRecord(credit:Credit):Mono<Credit>
     fun createCreditRecord(event: SalesEvent):Mono<Credit>
     fun findCreditById(id: String): Mono<Credit>
     fun findCreditsByCustomerId(id: String): Flux<Credit>

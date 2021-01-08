@@ -40,13 +40,13 @@ class ReactiveExpenditureServiceImpl : ReactiveExpenditureService {
     }
 
     override fun findExpenditures(date: String): Flux<Expenditure> {
-        return findExpenditures().filter { it.date == LocalDate.parse(date) }
+        return findExpenditures().filter { it.date() == LocalDate.parse(date) }
     }
 
     override fun findExpenditures(start: String, end: String): Flux<Expenditure> {
         val startDate = LocalDate.parse(start, DateTimeFormatter.ofPattern(DATE_PATTERN))
         val endDate = LocalDate.parse(end, DateTimeFormatter.ofPattern(DATE_PATTERN))
-        return findExpenditures().filter { it.date.isAfter(startDate) && it.date.isBefore(endDate) }
+        return findExpenditures().filter { it.date().isAfter(startDate) && it.date().isBefore(endDate) }
     }
 
     override fun editExpenditureById(id: String, desc: String, expense: Expenditure.Expense): Mono<Expenditure> {

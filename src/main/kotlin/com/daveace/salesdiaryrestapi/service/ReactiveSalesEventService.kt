@@ -1,8 +1,6 @@
 package com.daveace.salesdiaryrestapi.service
 
-import com.daveace.salesdiaryrestapi.domain.SalesEvent
-import com.daveace.salesdiaryrestapi.domain.SalesMetrics
-import com.daveace.salesdiaryrestapi.domain.User
+import com.daveace.salesdiaryrestapi.domain.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDate
@@ -31,5 +29,6 @@ interface ReactiveSalesEventService {
     fun findSemesterSalesEventsMetrics(currentUser:User): Mono<SalesMetrics>
     fun findYearlySalesEventsMetrics(currentUser: User): Mono<SalesMetrics>
     fun findSalesEventsMetrics(from: String, to: String, currentUser: User): Mono<SalesMetrics>
+    fun findCustomerRetentionMetrics(salesMetrics:SalesMetrics, customers:List<Customer>, purchaseTimes:Int = customers.size):Mono<CustomerRetentionMetrics>
 
 }

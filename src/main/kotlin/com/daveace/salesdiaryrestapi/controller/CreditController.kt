@@ -3,7 +3,6 @@ package com.daveace.salesdiaryrestapi.controller
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.API
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_CREDITS
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_CREDITS_FROM_EVENT
-import com.daveace.salesdiaryrestapi.domain.Credit
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
 import com.daveace.salesdiaryrestapi.exceptionhandling.AuthenticationException
 import com.daveace.salesdiaryrestapi.exceptionhandling.NotFoundException
@@ -26,6 +25,7 @@ import javax.validation.Valid
 @RequestMapping(API)
 class CreditController : BaseController() {
 
+
     private lateinit var creditService: ReactiveCreditService
     private lateinit var eventService: ReactiveSalesEventService
 
@@ -41,9 +41,9 @@ class CreditController : BaseController() {
 
     @PostMapping(SALES_DIARY_CREDITS)
     @ResponseStatus(HttpStatus.CREATED)
-    fun createCreditRecord(@Valid @RequestBody credit: Credit): Mono<CreditModel> {
-        return creditService.createCreditRecord(credit).flatMap {
-            respondWithReactiveLink(CreditModel(it), methodOn(this.javaClass).createCreditRecord(credit))
+    fun createCreditRecord(@Valid @RequestBody salesEvent: SalesEvent): Mono<CreditModel> {
+        return creditService.createCreditRecord(salesEvent).flatMap {
+            respondWithReactiveLink(CreditModel(it), methodOn(this.javaClass).createCreditRecord(salesEvent))
         }
     }
 

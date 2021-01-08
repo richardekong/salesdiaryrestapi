@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.hateoas.assembler
 
+import com.daveace.salesdiaryrestapi.controller.CreditController
 import com.daveace.salesdiaryrestapi.controller.ProductController
 import com.daveace.salesdiaryrestapi.domain.Product
 import com.daveace.salesdiaryrestapi.hateoas.model.ProductModel
@@ -9,15 +10,16 @@ import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo
 import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn
 
 class ProductModelAssembler : RepresentationModelAssemblerSupport<Product, ProductModel>(
-        ProductController::class.java,
-        ProductModel::class.java
+    ProductController::class.java,
+    ProductModel::class.java
 ) {
     override fun toModel(product: Product): ProductModel {
-        return instantiateModel(product)
-                .add(linkTo(methodOn(ProductController::class.java)
-                        .findProduct(product.id))
-                        .withSelfRel()
-                        .toMono().toFuture().join())
+        return instantiateModel(product).apply {
+            linkTo(methodOn(CreditController::class.java).findCredit(product.id))
+                .withSelfRel()
+                .toMono()
+                .subscribe { add(it) }
+        }
     }
 
     override fun toCollectionModel(product: MutableIterable<Product>): CollectionModel<ProductModel> {

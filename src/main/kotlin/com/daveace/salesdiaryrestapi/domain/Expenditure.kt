@@ -12,8 +12,8 @@ import javax.validation.constraints.Size
 @Document
 data class Expenditure(@field:Id val id: String = SalesDiaryId.generateId()) : Mappable {
     var traderId: String = ""
-    val date: LocalDate = LocalDate.now()
-    private val expenses: MutableList<Expense> = mutableListOf()
+    private var date: LocalDate = LocalDate.now()
+    private var expenses: MutableList<Expense> = mutableListOf()
     private var total: Double = 0.0
 
     constructor(
@@ -28,9 +28,13 @@ data class Expenditure(@field:Id val id: String = SalesDiaryId.generateId()) : M
         this.traderId = traderId
     }
 
+    fun date():LocalDate = date
+
     fun expenses():MutableList<Expense> = expenses
 
     fun total():Double = total
+
+
 
     data class Expense(var description: String, var amount: Double) : Mappable
 }

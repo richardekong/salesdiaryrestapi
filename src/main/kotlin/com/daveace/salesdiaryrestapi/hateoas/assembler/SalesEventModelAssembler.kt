@@ -1,5 +1,6 @@
 package com.daveace.salesdiaryrestapi.hateoas.assembler
 
+import com.daveace.salesdiaryrestapi.controller.CreditController
 import com.daveace.salesdiaryrestapi.controller.SalesEventController
 import com.daveace.salesdiaryrestapi.controller.UserController
 import com.daveace.salesdiaryrestapi.domain.SalesEvent
@@ -15,11 +16,12 @@ class SalesEventModelAssembler: RepresentationModelAssemblerSupport<SalesEvent, 
 ) {
 
     override fun toModel(event: SalesEvent): SalesEventModel {
-        return instantiateModel(event)
-                .add(linkTo(WebFluxLinkBuilder.methodOn(SalesEventController::class.java)
-                        .findSalesEventById(event.id))
-                        .withSelfRel()
-                        .toMono().toFuture().join())
+        return instantiateModel(event).apply {
+            linkTo(WebFluxLinkBuilder.methodOn(CreditController::class.java).findCredit(event.id))
+                .withSelfRel()
+                .toMono()
+                .subscribe { add(it) }
+        }
     }
 
     override fun toCollectionModel(events: MutableIterable<SalesEvent>): CollectionModel<SalesEventModel> {

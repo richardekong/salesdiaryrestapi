@@ -9,24 +9,20 @@ import reactor.core.publisher.Mono
 
 interface ReactiveLinkSupport {
 
-    fun <S : RepresentationModel<S>, T : Any> respondWithReactiveLink(
-            model: S,
-            method: T
-    ): Mono<S> = linkTo(method).withSelfRel().toMono().map { model.add(it) }
-
+    fun <S : RepresentationModel<S>, T : Any> respondWithReactiveLink(model: S, method: T): Mono<S> =
+        linkTo(method).withSelfRel().toMono().map { model.add(it) }
 
     fun <R, S : RepresentationModel<S>, T : Any> respondWithReactiveLinks(
-            assemblerSupport: RepresentationModelAssemblerSupport<R, S>,
-            resourceFlux: Flux<R>,
-            invokedMethod: T,
-            relation: String
+        assemblerSupport: RepresentationModelAssemblerSupport<R, S>,
+        resourceFlux: Flux<R>,
+        invokedMethod: T,
+        relation: String
     ): Flux<CollectionModel<S>> = resourceFlux.collectList().map { entities ->
         Flux.just(assemblerSupport.toCollectionModel(entities))
-                .flatMap { models ->
-                    linkTo(invokedMethod).withRel(relation)
-                            .toMono().map(models::add)
-                }
+            .flatMap { models ->
+                linkTo(invokedMethod).withRel(relation)
+                    .toMono().map(models::add)
+            }
     }.toFuture().join()
-
 
 }
