@@ -31,3 +31,4 @@ target/classes/mailgun.config.properties
 target/classes/twilio.config.properties
 target/classes/gmail.oauth.config.properties
 target/classes/output/report.pdf
+.idea/**
