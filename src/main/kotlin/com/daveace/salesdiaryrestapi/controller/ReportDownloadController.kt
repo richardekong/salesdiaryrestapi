@@ -18,6 +18,7 @@ import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_D
 import com.daveace.salesdiaryrestapi.controller.ControllerPath.Companion.SALES_DIARY_YEARLY_SALES_EVENTS_REPORT
 import com.daveace.salesdiaryrestapi.domain.*
 import com.daveace.salesdiaryrestapi.mapper.Mappable
+import com.daveace.salesdiaryrestapi.report.StockDialImageGenerator
 import com.daveace.salesdiaryrestapi.service.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.InputStreamResource
@@ -299,12 +300,19 @@ class ReportDownloadController : BaseController() {
         metrics: Mono<SalesMetrics>
     ): Mono<Map<String?, List<Mappable>>> {
         return salesEvents.run {
-            val customers: Flux<Customer> =
-                flatMap { event -> customerService.findAllCustomers().filter { event.customerId == it.id } }
+            val customers: Flux<Customer> = flatMap { event ->
+                customerService
+                    .findAllCustomers().filter { event.customerId == it.id }
+            }
+            val soldProducts: Flux<Product> = flatMap { event ->
+                productService
+                    .findProducts().filter { event.productId == it.id }
+            }
+            val traderProducts:Flux<Product> = authenticatedUser.getCurrentUser().flatMapMany { currentUser ->
+                productService.findProducts().filter {currentUser.id == it.traderId }
+            }
             Flux.mergeSequential(
-                this,
-                customers,
-                flatMap { event -> productService.findProducts().filter { event.productId == it.id } },
+                this, customers, soldProducts,
                 flatMap { event -> traderService.findAllTraders().filter { event.traderId == it.id } },
                 flatMap { event -> creditService.findAllCredits().filter { event.traderId == it.traderId() } },
                 flatMap { event -> expenditureService.findExpenditures().filter { event.traderId == it.traderId } },
@@ -315,6 +323,7 @@ class ReportDownloadController : BaseController() {
                             .toInt()
                     )
                 ),
+                flatMap { StockDialImageGenerator.generateDialImage(traderProducts) }.distinct(),
                 metrics.flux()
             ).collectList().map { mergedData ->
                 mergedData.groupBy { it::class.simpleName }
