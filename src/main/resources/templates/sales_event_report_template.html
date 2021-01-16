@@ -5,119 +5,7 @@
 
 <head>
     <title>Sales Report</title>
-    <style>
-
-        body {
-            padding: 20px;
-        }
-
-        table {
-            border: 1px solid #663399;
-            width: 100%;
-            padding: 5px;
-        }
-
-        .single-detail-table .right-cell {
-            background-color: black;
-            color: white;
-            font-weight: bold;
-            padding: 10px;
-            width: 20%;
-            text-align: left;
-        }
-
-        th {
-            color: white;
-            font-size: large;
-        }
-
-        tr {
-            border: 1px solid #663399;
-            background-color: white;
-            padding: 10px;
-        }
-
-        tr, td {
-            font-size: medium;
-            padding: 10px;
-        }
-
-        .header-row th {
-            background-color: black;
-            color: white;
-        }
-
-        tr:nth-child(odd) td {
-            background-color: #663399;
-            color: white;
-            text-align: center;
-        }
-
-        tr:nth-child(even) td {
-            background-color: #C690FC;
-            color: black;
-            text-align: center;
-        }
-
-        .topic {
-            background-color: black;
-            color: white;
-            font-size: 30px;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            text-align: center;
-            padding: 15px;
-        }
-
-        .list-items {
-            font-size: 25px;
-        }
-
-        .container {
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-            font-family: 'Bell MT', sans-serif;
-            padding: 20px;
-        }
-
-        #summary {
-            background-color: #663399;
-            font-family: 'Bell MT', sans-serif;
-            padding: 20px;
-            color: white;
-            font-size: x-large;
-        }
-
-        .definitions {
-            background-color: #663399;
-            font-family: 'Bell MT', sans-serif;
-            padding: 20px;
-            color: white;
-            font-size: large;
-
-        }
-
-        #summary ul {
-            list-style-type: none;
-        }
-
-        #summary ul li span {
-            margin-right: 0;
-        }
-
-        #summary ul li b {
-            margin-left: 60%;
-        }
-
-        #footer {
-            background-color: #663399;
-            color: white;
-            font-size: smaller;
-            height: 50%;
-            padding: 20px;
-        }
-
-    </style>
+    <link href="src/main/resources/static/css/sales_event-report.css" rel="stylesheet"/>
 </head>
 <body>
 <div class="container" th:if="${#maps.isEmpty(grouped_data)}">
@@ -158,7 +46,7 @@
 
 </div>
 <div class="container" th:unless="${#maps.isEmpty(grouped_data)}" th:with="metrics=${grouped_data['SalesMetrics'][0]}">
-    <div class="topic"  th:text="${metrics['category']+' Sales Report'}">Sales Report</div>
+    <div class="topic" th:text="${metrics['category']+' Sales Report'}">Sales Report</div>
     <table>
         <tr class="header-row">
             <th>Id</th>
@@ -189,6 +77,17 @@
             <li class="list-items">C.P: Cost Price</li>
             <li class="list-items">S.P: Sales Price</li>
         </ul>
+    </div>
+    <div class="topic">Products Availability Metrics</div>
+    <div class="definitions" th:if="${grouped_data['DialImagePath'] == null}">
+        <span>No record!</span>
+    </div>
+    <div class="product-dial-container" th:unless="${grouped_data['DialImagePath'] == null}">
+        <img class="product-dial-image"
+             th:each="dialImagePath:${grouped_data['DialImagePath']}"
+             th:src="${dialImagePath['path']}"
+             alt="dial chart"
+        />
     </div>
     <div class="topic">Trader Information</div>
     <table class="single-detail-table" th:with="trader=${grouped_data['Trader'][0]}">
