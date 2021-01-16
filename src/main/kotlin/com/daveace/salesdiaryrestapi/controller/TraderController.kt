@@ -106,7 +106,11 @@ class TraderController() : BaseController() {
         return authenticatedUser
             .isCurrentUserAuthorizedByEmail(email, principal)
             .flatMap {
-                traderService.addProduct(email, product)
+                val productToAdd = Product(
+                    product.traderId, product.name, product.imagePath,
+                    product.code, product.stock, product.cost
+                )
+                traderService.addProduct(email, productToAdd)
                     .flatMap {
                         respondWithReactiveLink(
                             ProductModel(it),
