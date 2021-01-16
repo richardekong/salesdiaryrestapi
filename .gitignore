@@ -27,8 +27,10 @@ src/main/resources/jwt.properties
 src/main/resources/twilio.config.properties
 src/main/resources/gmail.oauth.config.properties
 target/classes/jwt.properties
+target/classes/application.properties
 target/classes/mailgun.config.properties
 target/classes/twilio.config.properties
 target/classes/gmail.oauth.config.properties
 target/classes/output/report.pdf
+target/classes/templates/sales_event_report_template.html
 .idea/**
