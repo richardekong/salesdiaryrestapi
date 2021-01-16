@@ -13,22 +13,24 @@ import javax.validation.constraints.Size
 
 @Document
 data class Customer(
-        @Id
-        val id: String = SalesDiaryId.generateId(),
-        @field:Email(message = EMAIL_VAL_MSG)
-        var email: String = "",
-        @field:NotBlank(message = PHONE_VAL_MSG)
-        var phone: String = "",
-        @field:NotNull(message = NAME_VAL_MSG)
-        @field:Size(min = MIN_NAME_SIZE, message = MIN_NAME_SIZE_VAL_MSG)
-        var name: String = "",
-        var traderId: String = "",
-        @field:NotBlank(message = COMPANY_NAME_VAL_MSG)
-        var company: String = "",
-        @Field(name = "signature_path")
-        var signaturePath: String = "",
-        @field:NotBlank(message = ADDRESS_VAL_MSG)
-        var address: String = "") : Mappable {
+    @Id
+    val id: String = SalesDiaryId.generateId(),
+    @field:Email(message = EMAIL_VAL_MSG)
+    var email: String = "",
+    @field:NotBlank(message = PHONE_VAL_MSG)
+    var phone: String = "",
+    @field:NotNull(message = NAME_VAL_MSG)
+    @field:Size(min = MIN_NAME_SIZE, message = MIN_NAME_SIZE_VAL_MSG)
+    var name: String = "",
+    var traderId: String = "",
+    @field:NotBlank(message = COMPANY_NAME_VAL_MSG)
+    var company: String = "",
+    @Field(name = "signature_path")
+    var signaturePath: String = "",
+    @field:NotBlank(message = ADDRESS_VAL_MSG)
+    var address: String = "",
+    val date: LocalDate = LocalDate.now()
+) : Mappable {
 
     companion object {
         val ROLES = arrayOf("USER", "CUSTOMER")
@@ -37,11 +39,13 @@ data class Customer(
     @field:NotNull
     var location: MutableList<Double> = mutableListOf()
     var products: MutableList<Product> = mutableListOf()
-    val date: LocalDate = LocalDate.now()
+
 
     constructor() : this(email = "")
-    constructor(email: String, name: String, phone: String, traderId: String, company: String,
-                address: String, location: MutableList<Double>) : this() {
+    constructor(
+        email: String, name: String, phone: String, traderId: String, company: String,
+        address: String, location: MutableList<Double>
+    ) : this() {
 
         this.email = email
         this.name = name
