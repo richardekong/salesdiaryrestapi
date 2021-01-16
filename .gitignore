@@ -34,3 +34,5 @@ target/classes/gmail.oauth.config.properties
 target/classes/output/report.pdf
 target/classes/templates/sales_event_report_template.html
 .idea/**
+target/**
+*.iml
