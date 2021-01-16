@@ -34,6 +34,7 @@ data class Product(
     var cost: Double = 0.0
         set(value) {
             if (value >= 0.0) field = value
+            onStockChange(this);
         }
 
     constructor(traderId: String, name: String, code: String, imagePath: String, stock: Double, cost: Double) : this() {
@@ -42,6 +43,7 @@ data class Product(
         this.code = code
         this.imagePath = imagePath
         this.stock = stock
+        this.maxStock = stock;
         this.cost = cost
     }
 
