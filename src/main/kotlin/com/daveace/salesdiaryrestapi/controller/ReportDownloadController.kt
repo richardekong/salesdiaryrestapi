@@ -308,18 +308,19 @@ class ReportDownloadController : BaseController() {
                 productService
                     .findProducts().filter { event.productId == it.id }
             }
-            val traderProducts:Flux<Product> = authenticatedUser.getCurrentUser().flatMapMany { currentUser ->
-                productService.findProducts().filter {currentUser.id == it.traderId }
+            val traderProducts: Flux<Product> = authenticatedUser.getCurrentUser().flatMapMany { currentUser ->
+                productService.findProducts().filter { currentUser.id == it.traderId }
             }
             Flux.mergeSequential(
                 this, customers, soldProducts,
                 flatMap { event -> traderService.findAllTraders().filter { event.traderId == it.id } },
                 flatMap { event -> creditService.findAllCredits().filter { event.traderId == it.traderId() } },
-                flatMap { event -> expenditureService.findExpenditures().filter { event.traderId == it.traderId } },
+                flatMap { event ->
+                    expenditureService.findExpenditures().filter { event.traderId == it.traderId }
+                }.distinct(),
                 Flux.just(
                     CustomerRetentionMetrics(
-                        metrics, customers, customers
-                            .count().toFuture().join()
+                        metrics, customers, customers.count().toFuture().join()
                             .toInt()
                     )
                 ),
