@@ -8,7 +8,7 @@ table {
     padding: 5px;
 }
 
-.single-detail-table .right-cell {
+.single-detail-table .desc-cell {
     background-color: black;
     color: white;
     font-weight: bold;
@@ -98,6 +98,24 @@ tr:nth-child(even) td {
 
 #summary ul li b {
     margin-left: 60%;
+}
+.exp-list-container{
+    border: 1px solid #663399;
+}
+
+.exp-table{
+    border: #ffffff;
+}
+
+.exp-list{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.exp-item{
+    list-style-type: none;
+    display: inline;
 }
 
 #footer {
