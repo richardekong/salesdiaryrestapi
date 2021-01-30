@@ -12,9 +12,9 @@ import javax.validation.constraints.Size
 @Document
 data class Expenditure(@field:Id val id: String = SalesDiaryId.generateId()) : Mappable {
     var traderId: String = ""
-    private var date: LocalDate = LocalDate.now()
-    private var expenses: MutableList<Expense> = mutableListOf()
-    private var total: Double = 0.0
+    var date: LocalDate = LocalDate.now()
+    var expenses: MutableList<Expense> = mutableListOf()
+    var total: Double = 0.0
 
     constructor(
         @NotNull @Size(min = 1, message = "Entries must contain one entry at least")
