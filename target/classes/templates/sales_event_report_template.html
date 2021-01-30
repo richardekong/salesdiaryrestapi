@@ -92,23 +92,23 @@
     <div class="topic">Trader Information</div>
     <table class="single-detail-table" th:with="trader=${grouped_data['Trader'][0]}">
         <tr>
-            <td class="right-cell">Id</td>
+            <td class="desc-cell">Id</td>
             <td th:text="${trader['id']}"></td>
         </tr>
         <tr>
-            <td class="right-cell">Name</td>
+            <td class="desc-cell">Name</td>
             <td th:text="${trader['name']}"></td>
         </tr>
         <tr>
-            <td class="right-cell">Email</td>
+            <td class="desc-cell">Email</td>
             <td th:text="${trader['email']}"></td>
         </tr>
         <tr>
-            <td class="right-cell">Phone</td>
+            <td class="desc-cell">Phone</td>
             <td th:text="${trader['phone']}"></td>
         </tr>
         <tr>
-            <td class="right-cell">Address</td>
+            <td class="desc-cell">Address</td>
             <td th:text="${trader['address']}"></td>
         </tr>
     </table>
@@ -129,18 +129,75 @@
             <td th:text="${row['address']}"></td>
         </tr>
     </table>
+    <div class="topic">Credit Information</div>
+    <div class="definitions" th:if="${grouped_data['Credit'] == null}">
+        <span>No product purchased on credit!</span>
+    </div>
+    <table th:unless="${grouped_data['Credit'] == null}">
+        <tr class="header-row">
+            <th>ID</th>
+            <th>CustomerId</th>
+            <th>Debt</th>
+            <th>Qty</th>
+            <th>Date</th>
+        </tr>
+        <tr th:each="credit:${grouped_data['Credit']}">
+            <td th:text="${#strings.substring(credit['id'], 0, 4)}+' ...'"></td>
+            <td th:text="${#strings.substring(credit['customerId'], 0, 4)}+' ...'"></td>
+            <td th:text="${credit['salesPrice']}"></td>
+            <td th:text="${credit['quantity']}"></td>
+            <td th:text="${credit['date']}"></td>
+        </tr>
+    </table>
+    <div class="topic">Expenditures</div>
+    <div class="definitions" th:if="${grouped_data['Expenditure'] == null}">
+        <span>No expenditure have been made!</span>
+    </div>
+    <div class="exp-list-container" th:unless="${grouped_data['Expenditure'] == null}">
+        <ul class="exp-list" >
+            <li class="exp-item" th:each="exp:${grouped_data['Expenditure']}">
+                <table class="single-detail-table">
+                    <tr>
+                        <td class="desc-cell">Date</td>
+                        <td th:text="${exp['date']}"></td>
+                    </tr>
+                    <tr>
+                        <td class="desc-cell" th:colspan="2" style="text-align: center;">Expenses</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <table class="exp-table" th:with="expenses=${exp['expenses']}">
+                                <tr class="header-row">
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                </tr>
+                                <tr th:each="expense:${expenses}">
+                                    <td th:text="${expense['description']}"></td>
+                                    <td th:text="${expense['amount']}"></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="desc-cell">Total</td>
+                        <td th:text="${exp['total']}"></td>
+                    </tr>
+                </table>
+            </li>
+        </ul>
+    </div>
     <div class="topic" th:text="${metrics['category']+' Sales Metrics Information'}">Sales Metrics</div>
     <table class="single-detail-table">
         <tr>
-            <td class="right-cell">Total Cost</td>
+            <td class="desc-cell">Total Cost</td>
             <td th:text="${metrics['totalCost']}"></td>
         </tr>
         <tr>
-            <td class="right-cell">Total Sales</td>
+            <td class="desc-cell">Total Sales</td>
             <td th:text="${metrics['totalSales']}"></td>
         </tr>
         <tr>
-            <td class="right-cell">Total Profit</td>
+            <td class="desc-cell">Total Profit</td>
             <td th:text="${metrics['totalProfit']}"></td>
         </tr>
     </table>
