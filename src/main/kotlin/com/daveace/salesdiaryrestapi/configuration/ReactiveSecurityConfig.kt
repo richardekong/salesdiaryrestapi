@@ -14,6 +14,8 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.reactive.CorsConfigurationSource
 import reactor.core.publisher.Mono
 
 @Configuration
@@ -50,6 +52,17 @@ class ReactiveSecurityConfig {
             }
             .and()
             ?.csrf{c -> c.csrfTokenRepository(customCsrfTokenRepository())}
+            ?.cors{c ->
+                run {
+                    val source = CorsConfigurationSource {
+                        CorsConfiguration().apply {
+                            this.allowedOrigins = listOf("")
+                            this.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
+                        }
+                    }
+                    c.configurationSource(source)
+                }
+            }
             ?.httpBasic()?.disable()
             ?.authenticationManager(authenticationManager)
             ?.securityContextRepository(securityContextRepository)
